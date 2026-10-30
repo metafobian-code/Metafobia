@@ -8,7 +8,16 @@ const projects = [
   { name: "Q0", url: "https://online.fliphtml5.com/vogqc/awym/?fbclid=IwY2xjawU_OsdleHRuA2FlbQIxMQBwZG9mBXNydGMGYXBwX2lkDDM1MDY4NTUzMTcyOAABHm_Xq2fKe3KqErYhhmFPK7PDdmOm-2yhHWiw0hkSH03Td0bIOfsbwkJu7Jtf_aem_y8FjoofX5Eq40AQEidEFlg#p=12" },
   { name: "Verso del delirio", url: "https://online.fliphtml5.com/vogqc/yjdf/?fbclid=IwY2xjawU_PnRleHRuA2FlbQIxMQBwZG9mBXNydGMGYXBwX2lkDDM1MDY4NTUzMTcyOAABHk7SfZQQ8E31jZ3zesDBNvJ9hd9NjmWym-hPcyTyxsBbo6QusaQ5reK6dwUL_aem_3WCunQdTKhdWBy95731CkA#p=1" },
   { name: "Mi delirio tiene referencias", url: "https://metafobian-code.github.io/-xicos/" },
-  { name: "JSON del Kernel Aristotélico", url: "https://metafobian-code.github.io/poetrycode/" }
+  { name: "JSON del Kernel Aristotélico", url: "https://metafobian-code.github.io/poetrycode/" },
+  { name: "Huésped", url: "https://metafobian-code.github.io/host-detected/" },
+  { name: "Otro orden", url: "https://metafobian-code.github.io/Test/" },
+  { name: "Segmentos", url: "https://metafobian-code.github.io/Intercode/" },
+  { name: "El significante en el sueño", url: "https://metafobian-code.github.io/Sue-o.html/" },
+  { name: "Reflejos del día a día", url: "https://metafobian-code.github.io/index.html/" },
+  { name: "Cristales en tus ojos", url: "https://metafobian-code.github.io/cystal.index.html/" },
+  { name: "Memoria perdida", url: "https://metafobian-code.github.io/memory-lost/" },
+  { name: "Navíos, música de R. Reyes", url: "https://metafobian-code.github.io/Navrr/" },
+  { name: "Narración persistente", url: "https://metafobian-code.github.io/exec-0/payload/" }
 ];
 const FADE_MS = 700;
 const list = document.getElementById("projectList");
