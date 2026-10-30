@@ -1,5 +1,6 @@
 // Edita este arreglo para añadir, quitar o modificar proyectos.
 const projects = [
+  { name: "Horizonte", url: "https://metafobian-code.github.io/horizontes/" },
   { name: "Luz rubia", url: "https://metafobian-code.github.io/-Short/" },
   { name: "El significado de las cosas", url: "https://metafobian-code.github.io/signos/" },
   { name: "Nada sostiene", url: "https://metafobian-code.github.io/poema-ascii.html/" },
@@ -16,8 +17,7 @@ const projects = [
   { name: "Cristales en tus ojos", url: "https://metafobian-code.github.io/cystal.index.html/" },
   { name: "Memoria perdida", url: "https://metafobian-code.github.io/memory-lost/" },
   { name: "Navíos, música de R. Reyes", url: "https://metafobian-code.github.io/Navrr/" },
-  { name: "Narración persistente", url: "https://metafobian-code.github.io/exec-0/payload/" },
-  { name: "Horizonte", url: "https://metafobian-code.github.io/horizontes/" }
+  { name: "Narración persistente", url: "https://metafobian-code.github.io/exec-0/payload/" }
 ];
 const FADE_MS = 700;
 const list = document.getElementById("projectList");
