@@ -7,9 +7,9 @@ const projects = [
   { name: "Proyecto sin título (nombre provisional)", url: "https://metafobian-code.github.io/program6/" },
   { name: "Q0", url: "https://online.fliphtml5.com/vogqc/awym/?fbclid=IwY2xjawU_OsdleHRuA2FlbQIxMQBwZG9mBXNydGMGYXBwX2lkDDM1MDY4NTUzMTcyOAABHm_Xq2fKe3KqErYhhmFPK7PDdmOm-2yhHWiw0hkSH03Td0bIOfsbwkJu7Jtf_aem_y8FjoofX5Eq40AQEidEFlg#p=12" },
   { name: "Verso del delirio", url: "https://online.fliphtml5.com/vogqc/yjdf/?fbclid=IwY2xjawU_PnRleHRuA2FlbQIxMQBwZG9mBXNydGMGYXBwX2lkDDM1MDY4NTUzMTcyOAABHk7SfZQQ8E31jZ3zesDBNvJ9hd9NjmWym-hPcyTyxsBbo6QusaQ5reK6dwUL_aem_3WCunQdTKhdWBy95731CkA#p=1" },
-  { name: "Mi delirio tiene referencias", url: "https://metafobian-code.github.io/-xicos/" }
+  { name: "Mi delirio tiene referencias", url: "https://metafobian-code.github.io/-xicos/" },
+  { name: "JSON del Kernel Aristotélico", url: "https://metafobian-code.github.io/poetrycode/" }
 ];
-
 const FADE_MS = 700;
 const list = document.getElementById("projectList");
 const wrap = document.getElementById("listWrap");
