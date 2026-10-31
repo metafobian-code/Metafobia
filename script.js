@@ -20,7 +20,7 @@ const projects = [
   { name: "Narración persistente", url: "https://metafobian-code.github.io/exec-0/payload/" },
   { name: "RGB", url: "https://metafobian-code.github.io/rgb/" },
   { name: "无为", url: "https://metafobian-code.github.io/chong/" },
-  { name: "无为", url: "https://metafobian-code.github.io/chong/" }
+  { name: "Tenemos un problema", url: "https://metafobian-code.github.io/problemas/" }
 ];
 const FADE_MS = 700;
 const list = document.getElementById("projectList");
