@@ -17,7 +17,9 @@ const projects = [
   { name: "Cristales en tus ojos", url: "https://metafobian-code.github.io/cystal.index.html/" },
   { name: "Memoria perdida", url: "https://metafobian-code.github.io/memory-lost/" },
   { name: "Navíos, música de R. Reyes", url: "https://metafobian-code.github.io/Navrr/" },
-  { name: "Narración persistente", url: "https://metafobian-code.github.io/exec-0/payload/" }
+  { name: "Narración persistente", url: "https://metafobian-code.github.io/exec-0/payload/" },
+  { name: "RGB", url: "https://metafobian-code.github.io/rgb/" },
+  { name: "无为", url: "https://metafobian-code.github.io/chong/" }
 ];
 const FADE_MS = 700;
 const list = document.getElementById("projectList");
