@@ -22,7 +22,8 @@ const projects = [
   { name: "无为", url: "https://metafobian-code.github.io/chong/" },
   { name: "Tenemos un problema", url: "https://metafobian-code.github.io/problemas/" },
   { name: "Altazor 2.0", url: "https://metafobian-code.github.io/altazor2.0/" },
-  { name: "[Π.Π]", url: "https://metafobian-code.github.io/Script/" }
+  { name: "[Π.Π]", url: "https://metafobian-code.github.io/Script/" },
+  { name: "PROMPT: Jardín", url:"https://metafobian-code.github.io/-jardin/"}
 ];
 const FADE_MS = 700;
 const list = document.getElementById("projectList");
