@@ -32,7 +32,8 @@ const sections = [
   {
     name: "Ilustraciones, IA y absurdos",
     children: [
-      { name: "Ilustración", url: "https://metafobian-code.github.io/Ilustracion/" }
+      { name: "Ilustración", url: "https://metafobian-code.github.io/Ilustracion/" },
+      { name: "Collage", url: "https://metafobian-code.github.io/-Collage/" }
     ]
   }
 ];
