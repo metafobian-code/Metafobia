@@ -37,7 +37,8 @@ const sections = [
       { name: "Ilustración 18", url: "https://metafobian-code.github.io/Nio/" },
       { name: "Varios", url: "https://metafobian-code.github.io/Varios/" },
       { name: "Varios II", url: "https://metafobian-code.github.io/mas/" },
-      { name: "GIFs", url: "https://metafobian-code.github.io/Gifs/" }
+      { name: "GIFs", url: "https://metafobian-code.github.io/Gifs/" },
+      { name: "Colaboración audiovisual", url: "https://vt.tiktok.com/ZSpJyAWkr" }
     ]
   }
 ];
