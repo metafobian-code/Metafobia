@@ -23,7 +23,8 @@ const projects = [
   { name: "Tenemos un problema", url: "https://metafobian-code.github.io/problemas/" },
   { name: "Altazor 2.0", url: "https://metafobian-code.github.io/altazor2.0/" },
   { name: "[Π.Π]", url: "https://metafobian-code.github.io/Script/" },
-  { name: "PROMPT: Jardín", url:"https://metafobian-code.github.io/-jardin/"}
+  { name: "PROMPT: Jardín", url:"https://metafobian-code.github.io/-jardin/"},
+  { name: "Bloc_notas", url: "https://metafobian-code.github.io/rr/"}
 ];
 
 // Secciones: aparecen como un enlace bajo el título (arriba, al centro de la página).
