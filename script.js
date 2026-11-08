@@ -41,7 +41,8 @@ const sections = [
       { name: "Varios II", url: "https://metafobian-code.github.io/mas/" },
       { name: "GIFs", url: "https://metafobian-code.github.io/Gifs/" },
       { name: "Colaboración audiovisual", url: "https://vt.tiktok.com/ZSpJyAWkr" },
-      { name: "Angel", url: "https://metafobian-code.github.io/Cursor/" }
+      { name: "Angel", url: "https://metafobian-code.github.io/Cursor/" },
+      { name: "Neón Ne", url: "https://metafobian-code.github.io/infiernol/aureola-infiernol.html" }
     ]
   }
 ];
