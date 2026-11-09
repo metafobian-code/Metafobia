@@ -24,7 +24,8 @@ const projects = [
   { name: "Altazor 2.0", url: "https://metafobian-code.github.io/altazor2.0/" },
   { name: "[Π.Π]", url: "https://metafobian-code.github.io/Script/" },
   { name: "PROMPT: Jardín", url:"https://metafobian-code.github.io/-jardin/"},
-  { name: "Bloc_notas", url:"https://metafobian-code.github.io/rr/"}
+  { name: "Bloc_notas", url:"https://metafobian-code.github.io/rr/"},
+  { name: "Glitch", url:"https://metafobian-code.github.io/Glitch/"}
 
 ];
 
