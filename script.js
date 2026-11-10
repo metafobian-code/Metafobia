@@ -5,6 +5,7 @@ const projects = [
   { name: "El significado de las cosas", url: "https://metafobian-code.github.io/signos/" },
   { name: "Nada sostiene", url: "https://metafobian-code.github.io/poema-ascii.html/" },
   { name: "Entropía", url: "https://metafobian-code.github.io/schho/" },
+  { name: "Canek, Markov, Tracery y compañía", url: "https://consola.canekzapata.net/de/metafora-404" },
   { name: "Q0", url: "https://online.fliphtml5.com/vogqc/awym/?fbclid=IwY2xjawU_OsdleHRuA2FlbQIxMQBwZG9mBXNydGMGYXBwX2lkDDM1MDY4NTUzMTcyOAABHm_Xq2fKe3KqErYhhmFPK7PDdmOm-2yhHWiw0hkSH03Td0bIOfsbwkJu7Jtf_aem_y8FjoofX5Eq40AQEidEFlg#p=12" },
   { name: "Verso del delirio", url: "https://online.fliphtml5.com/vogqc/yjdf/?fbclid=IwY2xjawU_PnRleHRuA2FlbQIxMQBwZG9mBXNydGMGYXBwX2lkDDM1MDY4NTUzMTcyOAABHk7SfZQQ8E31jZ3zesDBNvJ9hd9NjmWym-hPcyTyxsBbo6QusaQ5reK6dwUL_aem_3WCunQdTKhdWBy95731CkA#p=1" },
   { name: "Mi delirio tiene referencias", url: "https://metafobian-code.github.io/-xicos/" },
