@@ -39,6 +39,7 @@ const sections = [
       { name: "Ilustración", url: "https://metafobian-code.github.io/Ilustracion/" },
       { name: "Sur", url: "https://metafobian-code.github.io/Sur/" },
       { name: "Ilustración 18", url: "https://metafobian-code.github.io/Nio/" },
+      { name: "Antiprisma", url: "https://metafobian-code.github.io/antiprisma/" },
       { name: "Varios", url: "https://metafobian-code.github.io/Varios/" },
       { name: "Varios II", url: "https://metafobian-code.github.io/mas/" },
       { name: "GIFs", url: "https://metafobian-code.github.io/Gifs/" },
