@@ -11,7 +11,7 @@ html::-webkit-scrollbar-track{background:transparent}
 html::-webkit-scrollbar-thumb{background:#000;border-radius:5px;border:2px solid rgba(255,255,255,.12)}
 body{background:#000;color:var(--fg);font-family:Georgia,"Times New Roman",serif;-webkit-text-size-adjust:100%}
 
-.layout{display:block;position:relative}
+.layout{display:block;position:relative;overflow-x:clip}
 
 .col--left{width:50%;min-height:100vh;min-height:100dvh;background:#000;padding:clamp(1.5rem,5vh,3.5rem) clamp(1.5rem,3.5vw,3.5rem) 4rem;position:relative;z-index:2}
 
@@ -92,3 +92,32 @@ body{background:#000;color:var(--fg);font-family:Georgia,"Times New Roman",serif
 .gates[hidden]{display:none}
 .gates .link{font-size:clamp(.85rem,1.2vw,1.05rem);font-style:italic}
 .gates .link:hover,.gates .link:focus-visible{transform:translateX(-6px)}
+
+/* ---- Ilustración que se pixela alrededor del cursor ---- */
+.pixelate{position:absolute;inset:0;pointer-events:none}
+
+/* ---- Botón y ventana de la consola ---- */
+.console-btn{position:fixed;left:clamp(1rem,2.5vw,2rem);bottom:calc(1rem + env(safe-area-inset-bottom,0px));z-index:20;
+  background:rgba(0,0,0,.75);color:#9a9a9a;border:1px solid #2a2a2a;border-radius:4px;padding:.45rem .8rem;
+  font:.78rem/1 "Courier New",Courier,monospace;letter-spacing:.06em;cursor:pointer;
+  transition:color .3s ease,border-color .3s ease,box-shadow .3s ease}
+.console-btn span{color:#50dcff;margin-right:.35em}
+.console-btn:hover,.console-btn:focus-visible{color:#fff;border-color:#555;box-shadow:0 0 14px rgba(255,255,255,.15);outline:none}
+.term{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;padding:1rem;background:rgba(0,0,0,.72);backdrop-filter:blur(3px)}
+.term[hidden]{display:none}
+.term > *{max-width:34rem;width:100%;min-width:0}
+.term{flex-direction:column;gap:0}
+.term-bar{display:flex;justify-content:space-between;align-items:center;background:#111;border:1px solid #2a2a2a;border-bottom:0;border-radius:6px 6px 0 0;padding:.45rem .7rem;font:.75rem "Courier New",monospace;color:#777}
+.term-x{background:none;border:0;color:#999;font-size:1.2rem;line-height:1;cursor:pointer;padding:0 .2rem}
+.term-x:hover,.term-x:focus-visible{color:#fff;outline:none}
+.term-out{margin:0;min-height:17rem;background:#050505;border:1px solid #2a2a2a;border-top:0;padding:1rem 1.1rem;
+  font:.92rem/1.6 "Courier New",Courier,monospace;color:#cfcfcf;white-space:pre-wrap;overflow-wrap:anywhere;box-shadow:0 0 40px rgba(80,220,255,.08)}
+.term-out .cmd{color:#50dcff}
+.term-out .dim{color:#666}
+.term-out .poem{color:#fff;font-family:Georgia,serif;font-style:italic;text-shadow:0 0 8px rgba(255,255,255,.35)}
+.term-out .blink{animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.term-help{margin-top:.8rem;font:.75rem/1.6 Georgia,serif;color:#8a8a8a;text-align:left}
+.term-help kbd{font:.7rem "Courier New",monospace;border:1px solid #444;border-radius:3px;padding:0 .3em;color:#ccc}
+@media (prefers-reduced-motion:reduce){.term-out .blink{animation:none}}
+@media (max-width:760px){.term-out{font-size:.82rem;min-height:15rem}}

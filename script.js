@@ -275,7 +275,7 @@ function dissolve(a) {
       }
     }
   }
-  if (!fxRunning) { fxRunning = true; fxLast = performance.now(); requestAnimationFrame(fxFrame); }
+  startFx();
 }
 function fxFrame(now) {
   const dt = Math.min(0.05, (now - fxLast) / 1000); fxLast = now;
@@ -286,16 +286,112 @@ function fxFrame(now) {
     if (p.age >= p.life) { fxParts.splice(i, 1); continue; }
     let x = p.x, y = p.y, k = 1;
     if (p.age > 0) {
-      p.x += p.vx * dt; p.y += p.vy * dt; p.vy -= 10 * dt;
+      p.x += p.vx * dt; p.y += p.vy * dt; p.vy += (p.g === undefined ? -10 : p.g) * dt;
       x = p.x + Math.sin(p.age * 18 + p.y) * 1.5; y = p.y;
       k = 1 - p.age / p.life;
     }
-    fctx.fillStyle = `rgba(255,255,255,${(k * 0.95).toFixed(3)})`;
+    fctx.fillStyle = `rgba(${p.c || "255,255,255"},${(k * (p.a || 0.95)).toFixed(3)})`;
     fctx.fillRect(Math.round(x / p.s) * p.s, Math.round(y / p.s) * p.s, p.s, p.s);
   }
   if (fxParts.length) requestAnimationFrame(fxFrame);
   else { fxRunning = false; fctx.clearRect(0, 0, innerWidth, innerHeight); }
 }
+
+function startFx() {
+  if (!fxRunning) { fxRunning = true; fxLast = performance.now(); requestAnimationFrame(fxFrame); }
+}
+
+// ---------- El cursor deja polvo de píxeles ----------
+let lastDust = 0;
+document.addEventListener("pointermove", e => {
+  if (reduceMotion.matches || e.pointerType === "touch") return;
+  const now = performance.now();
+  if (now - lastDust < 28 || fxParts.length > 1500) return;
+  lastDust = now;
+  const n = 1 + (Math.random() < 0.5 ? 1 : 0);
+  for (let i = 0; i < n; i++) {
+    fxParts.push({
+      x: e.clientX + (Math.random() - 0.5) * 6, y: e.clientY + (Math.random() - 0.5) * 6,
+      vx: (Math.random() - 0.5) * 14, vy: 4 + Math.random() * 10, g: 18,
+      s: Math.random() < 0.75 ? 2 : 3, age: 0, life: 0.6 + Math.random() * 0.7,
+      c: COLORS[(Math.random() * COLORS.length) | 0], a: 0.7
+    });
+  }
+  startFx();
+});
+
+// ---------- La ilustración se pixela alrededor del cursor ----------
+(() => {
+  const col = document.querySelector(".col--right"), img = col && col.querySelector(".art");
+  if (!img) return;
+  const cv = document.createElement("canvas");
+  cv.className = "pixelate";
+  col.appendChild(cv);
+  const c = cv.getContext("2d");
+  const CELL = 12, RAD = 95;
+  let W = 0, H = 0, cols = 0, rows = 0, d = 1, small = null, heat = null, running = false, lastT = 0;
+  function setup() {
+    if (!img.complete || !img.naturalWidth) return;
+    const r = col.getBoundingClientRect();
+    W = r.width; H = r.height; d = Math.min(2, window.devicePixelRatio || 1);
+    cv.width = Math.round(W * d); cv.height = Math.round(H * d);
+    cv.style.width = W + "px"; cv.style.height = H + "px";
+    cols = Math.ceil(W / CELL); rows = Math.ceil(H / CELL);
+    // copia reducida: cada píxel = color promedio de una celda (como object-fit: cover)
+    small = document.createElement("canvas");
+    small.width = cols; small.height = rows;
+    const sc2 = small.getContext("2d");
+    const pos = (getComputedStyle(document.documentElement).getPropertyValue("--image-position").trim() || "50% 50%").split(/\s+/).map(v => parseFloat(v) / 100);
+    const k = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+    const dw = img.naturalWidth * k, dh = img.naturalHeight * k;
+    const ox = (W - dw) * (isNaN(pos[0]) ? 0.5 : pos[0]), oy = (H - dh) * (isNaN(pos[1]) ? 0.5 : pos[1]);
+    sc2.imageSmoothingEnabled = true; sc2.imageSmoothingQuality = "high";
+    sc2.drawImage(img, ox / CELL, oy / CELL, dw / CELL, dh / CELL);
+    heat = new Float32Array(cols * rows);
+  }
+  function frame(t) {
+    const dt = Math.min(0.05, (t - lastT) / 1000); lastT = t;
+    c.setTransform(d, 0, 0, d, 0, 0);
+    c.clearRect(0, 0, W, H);
+    c.imageSmoothingEnabled = false;
+    let alive = false;
+    for (let i = 0; i < heat.length; i++) {
+      let h = heat[i];
+      if (h <= 0) continue;
+      h -= dt * 0.9; heat[i] = h;
+      if (h <= 0) continue;
+      alive = true;
+      const x = i % cols, y = (i / cols) | 0;
+      // algunas celdas se desplazan un poco: aspecto de señal rota
+      const j = h > 0.6 && ((i * 7919) % 11 === 0) ? CELL : 0;
+      c.globalAlpha = Math.min(1, h * 1.4);
+      c.drawImage(small, x, y, 1, 1, x * CELL + j, y * CELL, CELL, CELL);
+    }
+    c.globalAlpha = 1;
+    if (alive) requestAnimationFrame(frame); else running = false;
+  }
+  function heatAt(px, py) {
+    if (!heat) setup();
+    if (!heat) return;
+    const r = col.getBoundingClientRect();
+    const mx = px - r.left, my = py - r.top;
+    const x0 = Math.max(0, Math.floor((mx - RAD) / CELL)), x1 = Math.min(cols - 1, Math.ceil((mx + RAD) / CELL));
+    const y0 = Math.max(0, Math.floor((my - RAD) / CELL)), y1 = Math.min(rows - 1, Math.ceil((my + RAD) / CELL));
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+      const dd = Math.hypot(x * CELL + CELL / 2 - mx, y * CELL + CELL / 2 - my) / RAD;
+      if (dd > 1) continue;
+      // borde irregular: no todas las celdas se encienden
+      if (dd > 0.55 && Math.random() < dd * 0.8) continue;
+      const i = y * cols + x;
+      heat[i] = Math.max(heat[i], 1.1 - dd * 0.6);
+    }
+    if (!running) { running = true; lastT = performance.now(); requestAnimationFrame(frame); }
+  }
+  col.addEventListener("pointermove", e => { if (!reduceMotion.matches) heatAt(e.clientX, e.clientY); });
+  col.addEventListener("pointerdown", e => { if (!reduceMotion.matches) heatAt(e.clientX, e.clientY); });
+  if (img.complete) setup(); else img.addEventListener("load", setup);
+  window.addEventListener("resize", () => { heat = null; setup(); });
+})();
 
 // ---------- Aparición escalonada al desplazarse ----------
 let revealIO = null;
@@ -653,26 +749,83 @@ const sleeper = (() => {
   return { place };
 })();
 
-// ---------- Para quien mira la consola ----------
+// ---------- Poema escondido en la consola ----------
+const POEM = [
+  "no abras la metáfora:",
+  "adentro hay otra puerta",
+  "y detrás de la puerta, un gato",
+  "que sueña que es el código",
+  "que lo está soñando.",
+  "",
+  "cada enlace que tocas",
+  "se gasta un poco.",
+  "esta página te recuerda",
+  "mejor de lo que tú la recuerdas."
+];
 try {
-  console.log(
-    "%cMetafobia",
-    "font:italic 28px Georgia,serif;color:#fff;text-shadow:-2px 0 #ff3c8c,2px 0 #50dcff;padding:6px 0"
-  );
-  console.log(
-    "%cno abras la metáfora:\n" +
-    "adentro hay otra puerta\n" +
-    "y detrás de la puerta, un gato\n" +
-    "que sueña que es el código\n" +
-    "que lo está soñando.\n\n" +
-    "cada enlace que tocas\n" +
-    "se gasta un poco.\n" +
-    "esta página te recuerda\n" +
-    "mejor de lo que tú la recuerdas.",
-    "font:14px/1.6 Georgia,serif;color:#cfcfcf"
-  );
+  console.log("%cMetafobia", "font:italic 28px Georgia,serif;color:#fff;text-shadow:-2px 0 #ff3c8c,2px 0 #50dcff;padding:6px 0");
+  console.log("%c" + POEM.join("\n"), "font:14px/1.6 Georgia,serif;color:#cfcfcf");
   console.log("%c/* si llegaste hasta aquí, ya eres parte de la obra */", "font:12px monospace;color:#666");
 } catch (e) {}
+
+// Botón visible para quien no conoce la consola del navegador:
+// abre una "consola" dentro de la página que escribe el poema.
+(() => {
+  const btn = document.createElement("button");
+  btn.className = "console-btn";
+  btn.type = "button";
+  btn.innerHTML = '<span aria-hidden="true">&gt;_</span> abrir la consola';
+  btn.setAttribute("aria-haspopup", "dialog");
+  document.body.appendChild(btn);
+
+  const box = document.createElement("div");
+  box.className = "term";
+  box.setAttribute("role", "dialog");
+  box.setAttribute("aria-modal", "true");
+  box.setAttribute("aria-label", "Consola: poema escondido");
+  box.hidden = true;
+  box.innerHTML = `
+    <div class="term-bar"><span>consola — metafobia</span><button type="button" class="term-x" aria-label="Cerrar">×</button></div>
+    <pre class="term-out" aria-live="polite"></pre>
+    <p class="term-help">Este poema también está escondido en la consola real del navegador.
+    Para verla: en ordenador pulsa <kbd>F12</kbd> (o <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>J</kbd>;
+    en Mac <kbd>⌘</kbd>+<kbd>⌥</kbd>+<kbd>J</kbd>) y abre la pestaña «Consola».
+    En tabletas y móviles la consola real no está disponible: por eso existe esta ventana.</p>`;
+  document.body.appendChild(box);
+  const out = box.querySelector(".term-out");
+  let timer = null;
+
+  function type() {
+    const lines = [
+      { t: "> metafobia.leer('poema_oculto.txt')", cls: "cmd" },
+      { t: "  cargando metáforas... ok", cls: "dim" },
+      { t: "" },
+      ...POEM.map(t => ({ t, cls: "poem" })),
+      { t: "" },
+      { t: "/* si llegaste hasta aquí, ya eres parte de la obra */", cls: "dim" },
+      { t: "> _", cls: "cmd blink" }
+    ];
+    out.replaceChildren();
+    if (reduceMotion.matches) {
+      lines.forEach(l => { const s = document.createElement("span"); s.className = l.cls || ""; s.textContent = l.t + "\n"; out.appendChild(s); });
+      return;
+    }
+    let li = 0, ci = 0, span = null;
+    (function step() {
+      if (li >= lines.length) return;
+      const L = lines[li];
+      if (!span) { span = document.createElement("span"); span.className = L.cls || ""; out.appendChild(span); }
+      if (ci < L.t.length) { span.textContent += L.t[ci++]; timer = setTimeout(step, L.cls === "poem" ? 38 : 18); }
+      else { span.textContent += "\n"; li++; ci = 0; span = null; timer = setTimeout(step, L.t ? 260 : 140); }
+    })();
+  }
+  function open() { box.hidden = false; btn.setAttribute("aria-expanded", "true"); type(); box.querySelector(".term-x").focus(); }
+  function close() { clearTimeout(timer); box.hidden = true; btn.setAttribute("aria-expanded", "false"); btn.focus(); }
+  btn.addEventListener("click", open);
+  box.querySelector(".term-x").addEventListener("click", close);
+  box.addEventListener("click", e => { if (e.target === box) close(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !box.hidden) close(); });
+})();
 
 route();
 if (!reduceMotion.matches) requestAnimationFrame(frame);
