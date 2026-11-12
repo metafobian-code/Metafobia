@@ -1,35 +1,4 @@
-// Edita este arreglo para añadir, quitar o modificar proyectos.
-const projects = [
-  { name: "Horizonte", url: "https://metafobian-code.github.io/horizontes/" },
-  { name: "Luz rubia", url: "https://metafobian-code.github.io/-Short/" },
-  { name: "El significado de las cosas", url: "https://metafobian-code.github.io/signos/" },
-  { name: "Nada sostiene", url: "https://metafobian-code.github.io/poema-ascii.html/" },
-  { name: "Entropía", url: "https://metafobian-code.github.io/schho/" },
-  { name: "Canek, Markov, Tracery y compañía", url: "https://consola.canekzapata.net/de/metafora-404" },
-  { name: "Q0", url: "https://online.fliphtml5.com/vogqc/awym/?fbclid=IwY2xjawU_OsdleHRuA2FlbQIxMQBwZG9mBXNydGMGYXBwX2lkDDM1MDY4NTUzMTcyOAABHm_Xq2fKe3KqErYhhmFPK7PDdmOm-2yhHWiw0hkSH03Td0bIOfsbwkJu7Jtf_aem_y8FjoofX5Eq40AQEidEFlg#p=12" },
-  { name: "Verso del delirio", url: "https://online.fliphtml5.com/vogqc/yjdf/?fbclid=IwY2xjawU_PnRleHRuA2FlbQIxMQBwZG9mBXNydGMGYXBwX2lkDDM1MDY4NTUzMTcyOAABHk7SfZQQ8E31jZ3zesDBNvJ9hd9NjmWym-hPcyTyxsBbo6QusaQ5reK6dwUL_aem_3WCunQdTKhdWBy95731CkA#p=1" },
-  { name: "Ansible: la ilusión de cercanía", url: "https://metafobian-code.github.io/-ansibles/ansible-animacion-v5.html" },
-  { name: "Mi delirio tiene referencias", url: "https://metafobian-code.github.io/-xicos/" },
-  { name: "JSON del Kernel Aristotélico", url: "https://metafobian-code.github.io/poetrycode/" },
-  { name: "Huésped", url: "https://metafobian-code.github.io/host-detected/" },
-  { name: "Otro orden", url: "https://metafobian-code.github.io/Test/" },
-  { name: "Segmentos", url: "https://metafobian-code.github.io/Intercode/" },
-  { name: "El significante en el sueño", url: "https://metafobian-code.github.io/Sue-o.html/" },
-  { name: "Reflejos del día a día", url: "https://metafobian-code.github.io/index.html/" },
-  { name: "Cristales en tus ojos", url: "https://metafobian-code.github.io/cystal.index.html/" },
-  { name: "Memoria perdida", url: "https://metafobian-code.github.io/memory-lost/" },
-  { name: "Navíos, música de R. Reyes", url: "https://metafobian-code.github.io/Navrr/" },
-  { name: "Narración persistente", url: "https://metafobian-code.github.io/exec-0/payload/" },
-  { name: "RGB", url: "https://metafobian-code.github.io/rgb/" },
-  { name: "无为", url: "https://metafobian-code.github.io/chong/" },
-  { name: "Tenemos un problema", url: "https://metafobian-code.github.io/problemas/" },
-  { name: "Altazor 2.0", url: "https://metafobian-code.github.io/altazor2.0/" },
-  { name: "[Π.Π]", url: "https://metafobian-code.github.io/Script/" },
-  { name: "PROMPT: Jardín", url:"https://metafobian-code.github.io/-jardin/"},
-  { name: "Bloc_notas", url:"https://metafobian-code.github.io/rr/"},
-  { name: "Glitch", url:"https://metafobian-code.github.io/Glitch/"}
 
-];
 
 // Vistas previas: al pasar el cursor por una obra, la imagen de la derecha
 // cambia por su captura (carpeta "previews"). Para usar una imagen tuya,
@@ -73,9 +42,53 @@ const PREVIEWS = {
   "https://metafobian-code.github.io/signos/": "signos.webp"
 };
 
-// Secciones: aparecen como un enlace bajo el título (arriba, al centro de la página).
-// Al entrar, muestran su propia lista de enlaces. La última línea de cada arreglo NO lleva coma.
+// Secciones de la página principal. Cada una muestra su propia lista de obras.
+// Para añadir una obra: copia una línea { name: "...", url: "..." } dentro de su sección.
+// La última línea de cada lista NO lleva coma.
 const sections = [
+  {
+    name: "Poesía visual",
+    children: [
+      { name: "Horizonte", url: "https://metafobian-code.github.io/horizontes/" },
+      { name: "Luz rubia", url: "https://metafobian-code.github.io/-Short/" },
+      { name: "El significado de las cosas", url: "https://metafobian-code.github.io/signos/" },
+      { name: "Nada sostiene", url: "https://metafobian-code.github.io/poema-ascii.html/" },
+      { name: "El significante en el sueño", url: "https://metafobian-code.github.io/Sue-o.html/" },
+      { name: "Reflejos del día a día", url: "https://metafobian-code.github.io/index.html/" },
+      { name: "Cristales en tus ojos", url: "https://metafobian-code.github.io/cystal.index.html/" },
+      { name: "Altazor 2.0", url: "https://metafobian-code.github.io/altazor2.0/" },
+      { name: "Tenemos un problema", url: "https://metafobian-code.github.io/problemas/" },
+      { name: "Mi delirio tiene referencias", url: "https://metafobian-code.github.io/-xicos/" }
+    ]
+  },
+  {
+    name: "Código y net art",
+    children: [
+      { name: "Entropía", url: "https://metafobian-code.github.io/schho/" },
+      { name: "JSON del Kernel Aristotélico", url: "https://metafobian-code.github.io/poetrycode/" },
+      { name: "Huésped", url: "https://metafobian-code.github.io/host-detected/" },
+      { name: "Otro orden", url: "https://metafobian-code.github.io/Test/" },
+      { name: "Segmentos", url: "https://metafobian-code.github.io/Intercode/" },
+      { name: "Narración persistente", url: "https://metafobian-code.github.io/exec-0/payload/" },
+      { name: "Memoria perdida", url: "https://metafobian-code.github.io/memory-lost/" },
+      { name: "RGB", url: "https://metafobian-code.github.io/rgb/" },
+      { name: "无为", url: "https://metafobian-code.github.io/chong/" },
+      { name: "[Π.Π]", url: "https://metafobian-code.github.io/Script/" },
+      { name: "PROMPT: Jardín", url: "https://metafobian-code.github.io/-jardin/" },
+      { name: "Bloc_notas", url: "https://metafobian-code.github.io/rr/" },
+      { name: "Glitch", url: "https://metafobian-code.github.io/Glitch/" }
+    ]
+  },
+  {
+    name: "Libros y colaboraciones",
+    children: [
+      { name: "Q0", url: "https://online.fliphtml5.com/vogqc/awym/?fbclid=IwY2xjawU_OsdleHRuA2FlbQIxMQBwZG9mBXNydGMGYXBwX2lkDDM1MDY4NTUzMTcyOAABHm_Xq2fKe3KqErYhhmFPK7PDdmOm-2yhHWiw0hkSH03Td0bIOfsbwkJu7Jtf_aem_y8FjoofX5Eq40AQEidEFlg#p=12" },
+      { name: "Verso del delirio", url: "https://online.fliphtml5.com/vogqc/yjdf/?fbclid=IwY2xjawU_PnRleHRuA2FlbQIxMQBwZG9mBXNydGMGYXBwX2lkDDM1MDY4NTUzMTcyOAABHk7SfZQQ8E31jZ3zesDBNvJ9hd9NjmWym-hPcyTyxsBbo6QusaQ5reK6dwUL_aem_3WCunQdTKhdWBy95731CkA#p=1" },
+      { name: "Canek, Markov, Tracery y compañía", url: "https://consola.canekzapata.net/de/metafora-404" },
+      { name: "Navíos, música de R. Reyes", url: "https://metafobian-code.github.io/Navrr/" },
+      { name: "Ansible: la ilusión de cercanía", url: "https://metafobian-code.github.io/-ansibles/ansible-animacion-v5.html" }
+    ]
+  },
   {
     name: "Ilustraciones, IA y absurdos",
     children: [
@@ -93,6 +106,11 @@ const sections = [
     ]
   }
 ];
+
+// "Lo más reciente": la página pregunta a GitHub qué repositorio se actualizó
+// por última vez y destaca esa obra. Si GitHub no responde, usa esta:
+const LATEST_FALLBACK = "https://metafobian-code.github.io/-ansibles/ansible-animacion-v5.html";
+const GITHUB_USER = "metafobian-code";
 const FADE_MS = 700;
 const list = document.getElementById("projectList");
 const wrap = document.getElementById("listWrap");
@@ -123,6 +141,8 @@ function wear(name, visits) {
   return [...name].map((c, i) => gone.has(i) ? "\u00b7" : c).join("");
 }
 
+const SLEEP_SECTION = "ilustraciones-ia-y-absurdos"; // sección donde duerme el gatito
+
 function makeItem(name, href, sectionId, n) {
   const li = document.createElement("li");
   li.className = "item";
@@ -130,7 +150,7 @@ function makeItem(name, href, sectionId, n) {
     const num = document.createElement("span");
     num.className = "num";
     num.setAttribute("aria-hidden", "true");
-    num.textContent = String(n).padStart(2, "0");
+    num.textContent = typeof n === "number" ? String(n).padStart(2, "0") : n;
     li.appendChild(num);
   }
   const a = document.createElement("a");
@@ -152,19 +172,6 @@ function makeItem(name, href, sectionId, n) {
   return li;
 }
 
-// Enlaces de sección, bajo el título
-const gates = document.createElement("div");
-gates.className = "gates";
-document.querySelector(".head").appendChild(gates);
-sections.forEach(sec => {
-  const a = document.createElement("a");
-  a.className = "link gate";
-  a.textContent = sec.name;
-  a.href = "#" + slug(sec.name);
-  a.dataset.section = slug(sec.name);
-  gates.appendChild(a);
-});
-
 function render(items, title) {
   list.replaceChildren();
   if (title) {
@@ -180,15 +187,71 @@ function render(items, title) {
   observeReveal();
 }
 
+// ---------- Página principal: lo más reciente + secciones ----------
+const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+const allWorks = () => sections.flatMap(sec => sec.children.map(w => ({ ...w, section: sec.name })));
+let latestUrl = LATEST_FALLBACK;
+
+function makeFeatured() {
+  const w = allWorks().find(x => x.url === latestUrl) || allWorks()[0];
+  const li = makeItem(w.name, w.url, undefined, "✦");
+  li.classList.add("featured");
+  const label = document.createElement("p");
+  label.className = "featured-label";
+  label.textContent = "lo más reciente";
+  li.prepend(label);
+  const where = document.createElement("span");
+  where.className = "count";
+  where.textContent = w.section;
+  li.appendChild(where);
+  return li;
+}
+function renderMain() {
+  list.replaceChildren();
+  list.appendChild(makeFeatured());
+  sections.forEach((sec, i) => {
+    const li = makeItem(sec.name, "#" + slug(sec.name), slug(sec.name), ROMAN[i] || String(i + 1));
+    li.classList.add("section-item");
+    const cnt = document.createElement("span");
+    cnt.className = "count";
+    cnt.textContent = sec.children.length + (sec.children.length === 1 ? " obra" : " obras");
+    li.appendChild(cnt);
+    list.appendChild(li);
+  });
+  observeReveal();
+}
+// Pregunta a GitHub (una vez por visita) cuál es el repositorio más reciente
+(async () => {
+  const repoOf = u => { const m = u.match(/^https:\/\/[^/]+\.github\.io\/([^/?#]+)/i); return m ? decodeURIComponent(m[1]).toLowerCase() : null; };
+  try {
+    let names = null;
+    try { names = JSON.parse(sessionStorage.getItem("metafobia:repos")); } catch (e) {}
+    if (!names) {
+      const r = await fetch(`https://api.github.com/users/${GITHUB_USER}/repos?sort=pushed&direction=desc&per_page=50`);
+      if (!r.ok) return;
+      names = (await r.json()).map(x => x.name.toLowerCase());
+      try { sessionStorage.setItem("metafobia:repos", JSON.stringify(names)); } catch (e) {}
+    }
+    const works = allWorks();
+    for (const n of names) {
+      const w = works.find(x => repoOf(x.url) === n);
+      if (w) { latestUrl = w.url; break; }
+    }
+    {
+      const old = list.querySelector(".featured");
+      if (old && !location.hash) { const nu = makeFeatured(); nu.classList.add("reveal", "in"); old.replaceWith(nu); measure(); }
+    }
+  } catch (e) {}
+})();
+
 function route() {
   const id = decodeURIComponent(location.hash.slice(1));
   const sec = sections.find(x => slug(x.name) === id);
-  gates.querySelectorAll(".leaving").forEach(a => a.classList.remove("leaving"));
-  gates.hidden = !!sec;
-  if (sec) render(sec.children, sec.name); else render(projects);
+  if (sec) render(sec.children, sec.name); else renderMain();
   if (!reduceMotion.matches && list.animate) list.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 500, easing: "ease" });
   window.scrollTo(0, 0);
   resetCat();
+  if (window.placeSleeper) window.placeSleeper();
 }
 window.addEventListener("hashchange", route);
 
@@ -217,7 +280,6 @@ function handleClick(e) {
   }
 }
 list.addEventListener("click", handleClick);
-gates.addEventListener("click", handleClick);
 // Si el usuario vuelve con "atrás", restaurar los enlaces
 window.addEventListener("pageshow", () => {
   document.querySelectorAll(".leaving").forEach(a => a.classList.remove("leaving"));
@@ -579,7 +641,9 @@ function measure() {
   const w = wrap.getBoundingClientRect();
   lines = [...list.querySelectorAll(".link")].map(a => {
     const r = a.getBoundingClientRect();
-    return { top: r.top - w.top + 1, left: r.left - w.left, right: r.right - w.left };
+    // en el renglón del gatito dormido, el otro gato no pasa por encima de él
+    const cut = a.dataset.section === SLEEP_SECTION ? 72 : 0;
+    return { top: r.top - w.top + 1, left: r.left - w.left, right: r.right - w.left - cut };
   });
   sc = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--s")) || 1;
   if (idx >= lines.length) idx = Math.max(0, lines.length - 1);
@@ -783,8 +847,6 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
 // ---------- Gatito dormido sobre "Ilustraciones, IA y absurdos" ----------
 // Enroscado, respira despacio, de vez en cuando mueve la cola y suelta una "z".
 const sleeper = (() => {
-  const gate = gates.querySelector(".gate");
-  if (!gate) return null;
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("class", "sleeper");
   svg.setAttribute("aria-hidden", "true");
@@ -805,7 +867,7 @@ const sleeper = (() => {
         <text>z</text><text>z</text><text>z</text>
       </g>
     </g>`;
-  gates.appendChild(svg);
+  wrap.appendChild(svg);
   const pos = svg.querySelector(".sl-pos"), body = svg.querySelector(".sl-body");
   const eyeC = svg.querySelector(".sl-eye-closed"), eyeO = svg.querySelector(".sl-eye-open");
   // Despertar: abre un ojo, se estira y vuelve a dormirse
@@ -820,12 +882,15 @@ const sleeper = (() => {
   let px = 0, py = 0, ssc = 1;
 
   function place() {
-    if (gates.hidden) return;
-    const g = gates.getBoundingClientRect(), r = gate.getBoundingClientRect();
+    const gate = list.querySelector(`a.link[data-section="${SLEEP_SECTION}"]`);
+    svg.style.display = gate ? "" : "none";
+    if (!gate) return;
+    const g = wrap.getBoundingClientRect(), r = gate.getBoundingClientRect();
     ssc = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--s")) || 1) * 0.95;
-    px = r.right - g.left - 28 * ssc;
-    py = r.top - g.top + 4;
+    px = r.right - g.left - 22 * ssc;
+    py = r.top - g.top + 3;
   }
+  window.placeSleeper = place;
   // cola: reposo enroscada al frente; "flick" = se levanta, se curva y vuelve
   function tailPath(k) {
     const cx = lerp(18, 21, k), cy = lerp(2, -10, k);
@@ -880,7 +945,7 @@ const sleeper = (() => {
     requestAnimationFrame(frame);
   }
   place();
-  if (window.ResizeObserver) new ResizeObserver(place).observe(gates);
+  if (window.ResizeObserver) new ResizeObserver(place).observe(list);
   window.addEventListener("resize", place);
   window.addEventListener("load", place);
   window.addEventListener("hashchange", () => setTimeout(place, 50));

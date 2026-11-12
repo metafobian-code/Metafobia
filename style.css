@@ -122,3 +122,13 @@ body{background:#000;color:var(--fg);font-family:Georgia,"Times New Roman",serif
 .term-help kbd{font:.7rem "Courier New",monospace;border:1px solid #444;border-radius:3px;padding:0 .3em;color:#ccc}
 @media (prefers-reduced-motion:reduce){.term-out .blink{animation:none}}
 @media (max-width:760px){.term-out{font-size:.82rem;min-height:15rem}}
+
+/* ---- Página principal: lo más reciente + secciones ---- */
+.featured{margin-bottom:clamp(3rem,8vh,4.5rem)!important}
+.featured-label{font:.72rem/1 "Courier New",Courier,monospace;letter-spacing:.3em;text-transform:uppercase;color:#7a7a7a;margin-bottom:1.1rem}
+.featured .link{font-size:clamp(1.25rem,2.3vw,1.9rem)}
+.featured .num{color:#50dcff;text-shadow:0 0 8px rgba(80,220,255,.6)}
+.count{display:inline-block;margin-left:.9em;font:.7rem/1 "Courier New",Courier,monospace;letter-spacing:.1em;color:#5a5a5a;vertical-align:.2em;transition:color .35s ease}
+.item:hover .count,.item:focus-within .count{color:#aaa}
+.section-item .link{font-size:clamp(1.05rem,1.7vw,1.45rem)}
+@media (max-width:760px){.count{display:block;margin:.55rem 0 0 2.6rem}.featured .count{margin-left:2.6rem}}
