@@ -7,7 +7,6 @@
 const PREVIEWS = {
   "https://metafobian-code.github.io/-Short/": "short.webp",
   "https://metafobian-code.github.io/-ansibles/ansible-animacion-v5.html": "ansibles_ansible_animacion_v5_html.webp",
-  "https://metafobian-code.github.io/-editable/": "editable.webp",
   "https://metafobian-code.github.io/-jardin/": "jardin.webp",
   "https://metafobian-code.github.io/-xicos/": "xicos.webp",
   "https://metafobian-code.github.io/Cursor/": "cursor.webp",
@@ -76,8 +75,7 @@ const sections = [
       { name: "[Π.Π]", url: "https://metafobian-code.github.io/Script/" },
       { name: "PROMPT: Jardín", url: "https://metafobian-code.github.io/-jardin/" },
       { name: "Bloc_notas", url: "https://metafobian-code.github.io/rr/" },
-      { name: "Glitch", url: "https://metafobian-code.github.io/Glitch/" },
-      { name: "Texto animado (editable)", url: "https://metafobian-code.github.io/-editable/" }
+      { name: "Glitch", url: "https://metafobian-code.github.io/Glitch/" }
     ]
   },
   {
@@ -110,7 +108,7 @@ const sections = [
 // "Lo más reciente": la obra destacada arriba de la página principal.
 // Escribe aquí su enlace. Si lo cambias por null, la página elige sola
 // la obra cuyo repositorio de GitHub se actualizó por última vez.
-const LATEST = "https://metafobian-code.github.io/-ansibles/ansible-animacion-v5.html";
+const LATEST = null;
 const LATEST_FALLBACK = LATEST || "https://metafobian-code.github.io/-ansibles/ansible-animacion-v5.html";
 const GITHUB_USER = "metafobian-code";
 const FADE_MS = 700;
