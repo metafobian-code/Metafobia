@@ -94,6 +94,7 @@ body{background:#000;color:var(--fg);font-family:Georgia,"Times New Roman",serif
 .gates .link:hover,.gates .link:focus-visible{transform:translateX(-6px)}
 
 /* ---- Ilustración que se pixela alrededor del cursor ---- */
+.preview{position:absolute;inset:0;pointer-events:none}
 .pixelate{position:absolute;inset:0;pointer-events:none}
 
 /* ---- Botón y ventana de la consola ---- */

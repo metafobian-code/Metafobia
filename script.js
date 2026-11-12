@@ -31,6 +31,48 @@ const projects = [
 
 ];
 
+// Vistas previas: al pasar el cursor por una obra, la imagen de la derecha
+// cambia por su captura (carpeta "previews"). Para usar una imagen tuya,
+// súbela a esa carpeta y cambia aquí el nombre del archivo.
+// Las obras que no aparecen aquí muestran la ilustración principal.
+const PREVIEWS = {
+  "https://metafobian-code.github.io/-Short/": "short.webp",
+  "https://metafobian-code.github.io/-ansibles/ansible-animacion-v5.html": "ansibles_ansible_animacion_v5_html.webp",
+  "https://metafobian-code.github.io/-editable/": "editable.webp",
+  "https://metafobian-code.github.io/-jardin/": "jardin.webp",
+  "https://metafobian-code.github.io/-xicos/": "xicos.webp",
+  "https://metafobian-code.github.io/Cursor/": "cursor.webp",
+  "https://metafobian-code.github.io/Gifs/": "gifs.webp",
+  "https://metafobian-code.github.io/Glitch/": "glitch.webp",
+  "https://metafobian-code.github.io/Ilustracion/": "ilustracion.webp",
+  "https://metafobian-code.github.io/Intercode/": "intercode.webp",
+  "https://metafobian-code.github.io/Navrr/": "navrr.webp",
+  "https://metafobian-code.github.io/Nio/": "nio.webp",
+  "https://metafobian-code.github.io/Script/": "script.webp",
+  "https://metafobian-code.github.io/Sue-o.html/": "sue_o_html.webp",
+  "https://metafobian-code.github.io/Sur/": "sur.webp",
+  "https://metafobian-code.github.io/Test/": "test.webp",
+  "https://metafobian-code.github.io/Varios/": "varios.webp",
+  "https://metafobian-code.github.io/altazor2.0/": "altazor2_0.webp",
+  "https://metafobian-code.github.io/antiprisma/": "antiprisma.webp",
+  "https://metafobian-code.github.io/chong/": "chong.webp",
+  "https://metafobian-code.github.io/cystal.index.html/": "cystal_index_html.webp",
+  "https://metafobian-code.github.io/exec-0/payload/": "exec_0_payload.webp",
+  "https://metafobian-code.github.io/horizontes/": "horizontes.webp",
+  "https://metafobian-code.github.io/host-detected/": "host_detected.webp",
+  "https://metafobian-code.github.io/index.html/": "index_html.webp",
+  "https://metafobian-code.github.io/infiernol/aureola-infiernol.html": "infiernol_aureola_infiernol_html.webp",
+  "https://metafobian-code.github.io/mas/": "mas.webp",
+  "https://metafobian-code.github.io/memory-lost/": "memory_lost.webp",
+  "https://metafobian-code.github.io/poema-ascii.html/": "poema_ascii_html.webp",
+  "https://metafobian-code.github.io/poetrycode/": "poetrycode.webp",
+  "https://metafobian-code.github.io/problemas/": "problemas.webp",
+  "https://metafobian-code.github.io/rgb/": "rgb.webp",
+  "https://metafobian-code.github.io/rr/": "rr.webp",
+  "https://metafobian-code.github.io/schho/": "schho.webp",
+  "https://metafobian-code.github.io/signos/": "signos.webp"
+};
+
 // Secciones: aparecen como un enlace bajo el título (arriba, al centro de la página).
 // Al entrar, muestran su propia lista de enlaces. La última línea de cada arreglo NO lleva coma.
 const sections = [
@@ -320,6 +362,106 @@ document.addEventListener("pointermove", e => {
   startFx();
 });
 
+// ---------- Vista previa de cada obra en la columna derecha ----------
+// Transición pixelada: la imagen actual se deshace en cuadros grandes
+// y la nueva aparece resolviéndose de cuadros grandes a nítida.
+(() => {
+  const col = document.querySelector(".col--right"), base = col && col.querySelector(".art");
+  if (!base) return;
+  const cv = document.createElement("canvas");
+  cv.className = "preview";
+  col.appendChild(cv);
+  const c = cv.getContext("2d");
+  const tmp = document.createElement("canvas"), tc = tmp.getContext("2d");
+  const cache = {};
+  let W = 0, H = 0, d = 1, current = base, target = base, raf = 0, from = base, to = base, t0 = 0;
+  const D = 560, MAXC = 44;
+
+  function size() {
+    const r = col.getBoundingClientRect();
+    W = r.width; H = r.height; d = Math.min(2, window.devicePixelRatio || 1);
+    cv.width = Math.round(W * d); cv.height = Math.round(H * d);
+    cv.style.width = W + "px"; cv.style.height = H + "px";
+    if (current !== base && !raf) paint(current, 1);
+  }
+  function cover(im, w, h) {
+    const pos = (getComputedStyle(document.documentElement).getPropertyValue("--image-position").trim() || "50% 50%").split(/\s+/).map(v => parseFloat(v) / 100);
+    const k = Math.max(w / im.naturalWidth, h / im.naturalHeight);
+    const dw = im.naturalWidth * k, dh = im.naturalHeight * k;
+    return [(w - dw) * (isNaN(pos[0]) ? 0.5 : pos[0]), (h - dh) * (isNaN(pos[1]) ? 0.5 : pos[1]), dw, dh];
+  }
+  function paint(im, cell) {
+    c.setTransform(d, 0, 0, d, 0, 0);
+    c.clearRect(0, 0, W, H);
+    if (cell <= 1) {
+      c.imageSmoothingEnabled = true;
+      const [x, y, w, h] = cover(im, W, H);
+      c.drawImage(im, x, y, w, h);
+      return;
+    }
+    const sw = Math.max(1, Math.ceil(W / cell)), sh = Math.max(1, Math.ceil(H / cell));
+    tmp.width = sw; tmp.height = sh;
+    tc.imageSmoothingEnabled = true;
+    const [x, y, w, h] = cover(im, sw, sh);
+    tc.drawImage(im, x, y, w, h);
+    c.imageSmoothingEnabled = false;
+    c.drawImage(tmp, 0, 0, sw, sh, 0, 0, sw * cell, sh * cell);
+  }
+  function step(now) {
+    const q = Math.min(1, (now - t0) / D);
+    if (q < 0.4) paint(from, Math.round(1 + (MAXC - 1) * ease(q / 0.4)));
+    else paint(to, Math.round(1 + (MAXC - 1) * (1 - ease((q - 0.4) / 0.6))));
+    if (q < 1) { raf = requestAnimationFrame(step); return; }
+    raf = 0; current = to;
+    if (to === base) c.clearRect(0, 0, W, H); // se vuelve a ver la ilustración original
+    window.artSource = to;
+    window.dispatchEvent(new Event("artchange"));
+  }
+  function go(im) {
+    if (im === target) return;
+    target = im;
+    if (!W) size();
+    if (raf) { cancelAnimationFrame(raf); raf = 0; }
+    from = current; to = im;
+    if (reduceMotion.matches) { from = to; current = to; if (to === base) c.clearRect(0, 0, W, H); else paint(to, 1); window.artSource = to; window.dispatchEvent(new Event("artchange")); return; }
+    t0 = performance.now();
+    raf = requestAnimationFrame(step);
+  }
+  function load(file) {
+    if (!cache[file]) { const im = new Image(); im.decoding = "async"; im.src = "previews/" + file; cache[file] = im; }
+    return cache[file];
+  }
+  function show(file) {
+    if (!file) { go(base); return; }
+    const im = load(file);
+    if (im.complete && im.naturalWidth) go(im);
+    else { target = null; im.onload = () => { if (pending === file) go(im); }; }
+  }
+  let pending = null, backTimer = null;
+  document.addEventListener("pointerover", e => {
+    const a = e.target.closest && e.target.closest("a.link");
+    if (!a || !list.contains(a)) return;
+    clearTimeout(backTimer);
+    const file = PREVIEWS[a.getAttribute("href")] || null;
+    pending = file;
+    show(file);
+  });
+  list.addEventListener("pointerleave", e => {
+    if (e.pointerType === "touch") return;
+    clearTimeout(backTimer);
+    backTimer = setTimeout(() => { pending = null; show(null); }, 650);
+  });
+  window.addEventListener("hashchange", () => { pending = null; show(null); });
+  window.addEventListener("resize", size);
+  // precarga discreta de las vistas previas
+  window.addEventListener("load", () => {
+    const files = [...new Set(Object.values(PREVIEWS))];
+    let i = 0;
+    (function next() { if (i < files.length) { load(files[i++]); setTimeout(next, 120); } })();
+  });
+  size();
+})();
+
 // ---------- La ilustración se pixela alrededor del cursor ----------
 (() => {
   const col = document.querySelector(".col--right"), img = col && col.querySelector(".art");
@@ -331,7 +473,8 @@ document.addEventListener("pointermove", e => {
   const CELL = 12, RAD = 95;
   let W = 0, H = 0, cols = 0, rows = 0, d = 1, small = null, heat = null, running = false, lastT = 0;
   function setup() {
-    if (!img.complete || !img.naturalWidth) return;
+    const src = window.artSource || img;
+    if (!src.complete || !src.naturalWidth) return;
     const r = col.getBoundingClientRect();
     W = r.width; H = r.height; d = Math.min(2, window.devicePixelRatio || 1);
     cv.width = Math.round(W * d); cv.height = Math.round(H * d);
@@ -342,11 +485,11 @@ document.addEventListener("pointermove", e => {
     small.width = cols; small.height = rows;
     const sc2 = small.getContext("2d");
     const pos = (getComputedStyle(document.documentElement).getPropertyValue("--image-position").trim() || "50% 50%").split(/\s+/).map(v => parseFloat(v) / 100);
-    const k = Math.max(W / img.naturalWidth, H / img.naturalHeight);
-    const dw = img.naturalWidth * k, dh = img.naturalHeight * k;
+    const k = Math.max(W / src.naturalWidth, H / src.naturalHeight);
+    const dw = src.naturalWidth * k, dh = src.naturalHeight * k;
     const ox = (W - dw) * (isNaN(pos[0]) ? 0.5 : pos[0]), oy = (H - dh) * (isNaN(pos[1]) ? 0.5 : pos[1]);
     sc2.imageSmoothingEnabled = true; sc2.imageSmoothingQuality = "high";
-    sc2.drawImage(img, ox / CELL, oy / CELL, dw / CELL, dh / CELL);
+    sc2.drawImage(src, ox / CELL, oy / CELL, dw / CELL, dh / CELL);
     heat = new Float32Array(cols * rows);
   }
   function frame(t) {
@@ -391,6 +534,7 @@ document.addEventListener("pointermove", e => {
   col.addEventListener("pointerdown", e => { if (!reduceMotion.matches) heatAt(e.clientX, e.clientY); });
   if (img.complete) setup(); else img.addEventListener("load", setup);
   window.addEventListener("resize", () => { heat = null; setup(); });
+  window.addEventListener("artchange", () => { heat = null; setup(); });
 })();
 
 // ---------- Aparición escalonada al desplazarse ----------
