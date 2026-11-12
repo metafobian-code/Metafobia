@@ -76,7 +76,8 @@ const sections = [
       { name: "[Π.Π]", url: "https://metafobian-code.github.io/Script/" },
       { name: "PROMPT: Jardín", url: "https://metafobian-code.github.io/-jardin/" },
       { name: "Bloc_notas", url: "https://metafobian-code.github.io/rr/" },
-      { name: "Glitch", url: "https://metafobian-code.github.io/Glitch/" }
+      { name: "Glitch", url: "https://metafobian-code.github.io/Glitch/" },
+      { name: "Texto animado (editable)", url: "https://metafobian-code.github.io/-editable/" }
     ]
   },
   {
@@ -101,15 +102,16 @@ const sections = [
       { name: "GIFs", url: "https://metafobian-code.github.io/Gifs/" },
       { name: "Colaboración audiovisual", url: "https://vt.tiktok.com/ZSpJyAWkr" },
       { name: "Angel", url: "https://metafobian-code.github.io/Cursor/" },
-      { name: "Neón Ne", url: "https://metafobian-code.github.io/infiernol/aureola-infiernol.html" },
-      { name: "Texto animado (editable)", url: "https://metafobian-code.github.io/-editable/" }
+      { name: "Neón Ne", url: "https://metafobian-code.github.io/infiernol/aureola-infiernol.html" }
     ]
   }
 ];
 
-// "Lo más reciente": la página pregunta a GitHub qué repositorio se actualizó
-// por última vez y destaca esa obra. Si GitHub no responde, usa esta:
-const LATEST_FALLBACK = "https://metafobian-code.github.io/-ansibles/ansible-animacion-v5.html";
+// "Lo más reciente": la obra destacada arriba de la página principal.
+// Escribe aquí su enlace. Si lo cambias por null, la página elige sola
+// la obra cuyo repositorio de GitHub se actualizó por última vez.
+const LATEST = "https://metafobian-code.github.io/-ansibles/ansible-animacion-v5.html";
+const LATEST_FALLBACK = LATEST || "https://metafobian-code.github.io/-ansibles/ansible-animacion-v5.html";
 const GITHUB_USER = "metafobian-code";
 const FADE_MS = 700;
 const list = document.getElementById("projectList");
@@ -223,6 +225,7 @@ function renderMain() {
 // Pregunta a GitHub (una vez por visita) cuál es el repositorio más reciente
 (async () => {
   const repoOf = u => { const m = u.match(/^https:\/\/[^/]+\.github\.io\/([^/?#]+)/i); return m ? decodeURIComponent(m[1]).toLowerCase() : null; };
+  if (LATEST) return; // obra elegida a mano: no se consulta GitHub
   try {
     let names = null;
     try { names = JSON.parse(sessionStorage.getItem("metafobia:repos")); } catch (e) {}
