@@ -18,13 +18,20 @@
     <nav class="list-wrap" aria-label="Proyectos" id="listWrap">
       <ul class="list" id="projectList"></ul>
 
-      <svg class="octopus" id="octopus" width="1" height="1" aria-hidden="true" focusable="false">
-        <g id="octoPos">
-          <g id="tentacles" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"></g>
-          <g id="octoHead">
-            <path d="M-13 -22 C-15 -43 15 -43 13 -22 C13 -15 8 -12 0 -12 C-8 -12 -13 -15 -13 -22 Z" fill="#fff"/>
-            <ellipse cx="-3" cy="-24" rx="2.4" ry="3.2" fill="#000"/>
-            <ellipse cx="6" cy="-24" rx="2.4" ry="3.2" fill="#000"/>
+      <canvas class="dust" id="dust" aria-hidden="true"></canvas>
+      <svg class="cat" id="cat" width="1" height="1" aria-hidden="true" focusable="false">
+        <g id="catPos">
+          <g id="catBody">
+            <path id="tail" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+            <g id="legs" stroke="#fff" stroke-width="2.2" stroke-linecap="round">
+              <line/><line opacity=".75"/><line opacity=".75"/><line/>
+            </g>
+            <ellipse cx="0" cy="-10" rx="11" ry="5.5" fill="#fff"/>
+            <g id="catHead">
+              <path d="M7.4 -16.5 L8.6 -24 L11.6 -19.6 Z M12.6 -19.6 L15.8 -24 L16.8 -16.5 Z" fill="#fff"/>
+              <circle cx="12" cy="-15" r="5.2" fill="#fff"/>
+              <ellipse cx="14.4" cy="-15.8" rx="0.9" ry="1.5" fill="#000"/>
+            </g>
           </g>
         </g>
       </svg>

@@ -2,7 +2,7 @@
   --fg:#e6e6e6;
   --fg-hi:#fff;
   --image-position:50% 50%;   /* posición de la imagen: cámbiala aquí */
-  --s:1;                      /* escala del pulpo */
+  --s:1.3;                    /* escala del gato */
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{background:#000;overflow-y:scroll;scrollbar-width:thin;scrollbar-color:#000 transparent}
@@ -38,11 +38,12 @@ body{background:#000;color:var(--fg);font-family:Georgia,"Times New Roman",serif
 .link.leaving{animation:vanish .7s ease forwards;pointer-events:none}
 @keyframes vanish{from{filter:blur(0);opacity:1}to{filter:blur(14px);opacity:0}}
 
-.octopus{position:absolute;left:0;top:0;width:1px;height:1px;overflow:visible;z-index:3;pointer-events:none;filter:drop-shadow(0 0 4px rgba(255,255,255,.55))}
+.cat{position:absolute;left:0;top:0;width:1px;height:1px;overflow:visible;z-index:3;pointer-events:none;filter:drop-shadow(0 0 4px rgba(255,255,255,.55))}
+.dust{position:absolute;left:-40px;top:-40px;z-index:2;pointer-events:none}
 
 /* Móvil: imagen arriba, lista debajo */
 @media (max-width:760px){
-  :root{--s:.8}
+  :root{--s:1}
   .layout{display:flex;flex-direction:column}
   .col--right{position:relative;order:-1;width:100%;height:36dvh;min-height:200px}
   .col--left{width:100%;min-height:0;padding:1.4rem 1.2rem 3rem}
