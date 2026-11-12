@@ -131,3 +131,16 @@ body{background:#000;color:var(--fg);font-family:Georgia,"Times New Roman",serif
 .item:hover .count,.item:focus-within .count{color:#aaa}
 .section-item .link{font-size:clamp(1.05rem,1.7vw,1.45rem)}
 @media (max-width:760px){.count{display:block;margin:.55rem 0 0 2.6rem}.featured .count{margin-left:2.6rem}}
+
+/* ---- Botón "perderse" (junto al de la consola) ---- */
+.dock{position:fixed;left:clamp(1rem,2.5vw,2rem);bottom:calc(1rem + env(safe-area-inset-bottom,0px));z-index:20;display:flex;gap:.6rem;flex-wrap:wrap}
+.dock .console-btn{position:static}
+.drift-btn{
+  background:rgba(0,0,0,.75);color:#9a9a9a;border:1px solid #2a2a2a;border-radius:4px;padding:.45rem .8rem;
+  font:.78rem/1 "Courier New",Courier,monospace;letter-spacing:.06em;cursor:pointer;transition:color .3s ease,border-color .3s ease,box-shadow .3s ease}
+.drift-btn span{color:#ff8cc6;margin-right:.35em}
+.drift-btn:hover,.drift-btn:focus-visible{color:#fff;border-color:#555;box-shadow:0 0 14px rgba(255,140,198,.2);outline:none}
+.drift-btn.leaving{animation:vanish .7s ease forwards;pointer-events:none}
+
+/* ---- Gatito secreto ---- */
+.kitten{position:fixed;left:0;top:0;width:1px;height:1px;overflow:visible;z-index:25;pointer-events:none;filter:drop-shadow(0 0 5px rgba(255,255,255,.7))}

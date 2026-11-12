@@ -514,7 +514,7 @@ function measure() {
     const r = a.getBoundingClientRect();
     // en el renglón del gatito dormido, el otro gato no pasa por encima de él
     const cut = a.dataset.section === SLEEP_SECTION ? 72 : 0;
-    return { top: r.top - w.top + 1, left: r.left - w.left, right: r.right - w.left - cut };
+    return { top: r.top - w.top + 1, left: r.left - w.left, right: r.right - w.left - cut, sleep: cut > 0 };
   });
   sc = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--s")) || 1;
   if (idx >= lines.length) idx = Math.max(0, lines.length - 1);
@@ -528,6 +528,9 @@ function measure() {
 
 // Estados: walk → (sit) → crouch → jump → land → walk
 let idx = 0, dv = 1, phase = "walk", pt = 0, gait = 0;
+// Encuentro: a veces el gato camina hasta el gatito dormido y se acurruca a su lado
+let meetPending = false, meetCooldown = 12, napFor = 0, clock = 0;
+const catEye = document.getElementById("catEye");
 let fx = 0, fy = 0, face = 1, x0 = 0, x1 = 0, dur = 2, sitFor = 0;
 let jx0 = 0, jy0 = 0, jx1 = 0, jy1 = 0, jdur = 0.7, jh = 18;
 let ready = false, dustAcc = 0;
@@ -541,6 +544,10 @@ function planWalk() {
   x0 = clamp(fx, Math.min(lo, L.right - 10), Math.max(hi, L.left + 10));
   x1 = (x0 - lo > hi - x0) ? lo : hi;
   if (Math.abs(x1 - x0) < 30) x1 = (x0 - lo < hi - x0) ? hi : lo;
+  meetPending = false;
+  if (L.sleep && clock > meetCooldown && Math.random() < 0.6) {
+    x1 = L.right - 2; meetPending = true; // camina hasta quedar junto al dormido
+  }
   dur = Math.max(1.2, Math.abs(x1 - x0) / 42);
   face = Math.sign(x1 - x0) || face;
 }
@@ -587,7 +594,9 @@ function stepDust(dt) {
 // ---- Dibujo del gato (coordenadas locales: patas en y=0, mira a la derecha) ----
 function draw(t) {
   let squash = 1, lift = 0, legMode = "walk";
-  if (phase === "sit" || phase === "look") legMode = "sit";
+  if (phase === "sit" || phase === "look" || phase === "nap") legMode = "sit";
+  if (phase === "nap") squash = 0.76 + Math.sin(t / 650) * 0.025;
+  catEye.setAttribute("ry", phase === "nap" ? "0.25" : "1.5");
   if (phase === "crouch") { squash = 1 - 0.22 * ease(clamp(pt / CROUCH, 0, 1)); legMode = "sit"; }
   if (phase === "jump") legMode = "jump";
   if (phase === "land") { squash = 1 - 0.18 * Math.sin(clamp(pt / LAND, 0, 1) * Math.PI); }
@@ -612,14 +621,14 @@ function draw(t) {
 
   // cola: ondula; erguida cuando se sienta
   const sway = phase === "look" ? Math.sin(t / 140) * 3 : Math.sin(t / (phase === "sit" ? 520 : 260)) * (phase === "sit" ? 4 : 2.5);
-  const tipY = phase === "jump" ? -14 : (phase === "sit" || phase === "look") ? -26 : -23;
+  const tipY = phase === "jump" ? -14 : phase === "nap" ? -6 : (phase === "sit" || phase === "look") ? -26 : -23;
   const tipX = phase === "jump" ? -24 : -17 + sway;
   tail.setAttribute("d", `M-10 -11 Q${(-20 + sway * 0.5).toFixed(1)} -13 ${tipX.toFixed(1)} ${tipY.toFixed(1)}`);
 
   const bob = phase === "walk" ? Math.abs(Math.sin(gait * Math.PI * 2)) * -0.8 : 0;
   const tiltJ = phase === "jump" ? (jy1 > jy0 ? 1 : -1) * Math.cos(clamp(pt / jdur, 0, 1) * Math.PI) * -14 : 0;
   catBody.setAttribute("transform", `translate(0 ${(bob - lift).toFixed(2)}) rotate(${tiltJ.toFixed(1)} 0 -8) scale(1 ${squash.toFixed(3)})`);
-  const look = phase === "look" ? lookAng : phase === "sit" ? Math.sin(t / 900) * 8 : 0;
+  const look = phase === "look" ? lookAng : phase === "nap" ? 22 : phase === "sit" ? Math.sin(t / 900) * 8 : 0;
   catHead.setAttribute("transform", `rotate(${look.toFixed(1)} 12 -15)`);
   catPos.setAttribute("transform", `translate(${fx.toFixed(1)} ${fy.toFixed(1)}) scale(${face * sc} ${sc})`);
 }
@@ -634,7 +643,7 @@ let last = null;
 function frame(t) {
   if (!ready) { last = null; requestAnimationFrame(frame); return; }
   const dt = last === null ? 0 : Math.min(0.05, (t - last) / 1000);
-  last = t; pt += dt;
+  last = t; pt += dt; clock += dt;
   const L = lines[idx];
 
   // ¿está el cursor cerca?
@@ -644,7 +653,7 @@ function frame(t) {
     cx = ptr.x - w.left; cy = ptr.y - w.top;
     near = Math.hypot(cx - fx, cy - (fy - 14 * sc)) < 95 * sc;
   }
-  if (near && (phase === "walk" || phase === "sit")) { phase = "look"; pt = 0; }
+  if (near && (phase === "walk" || phase === "sit")) { phase = "look"; pt = 0; meetPending = false; }
   if (phase === "look") {
     fy = L.top;
     if (near) {
@@ -667,11 +676,18 @@ function frame(t) {
     fy = L.top;
     dustAcc += dt;
     if (dustAcc > 0.14 && Math.abs(fx - prev) > 0.05) { dustAcc = 0; emit(fx - face * 8 * sc, fy - 1, 1, 2, 0.7, 6); }
-    if (pt >= dur) {
+    if (pt >= dur && meetPending) {
+      meetPending = false; phase = "nap"; pt = 0; napFor = rnd(6, 10); meetCooldown = clock + rnd(45, 90);
+      face = 1;
+      for (let i = 0; i < 6; i++) parts.push({ x: fx + rnd(-4, 14), y: fy - 30 - rnd(0, 6), vx: rnd(-4, 4), vy: rnd(-14, -6), s: 2, life: rnd(1.4, 2.2), age: 0, c: "255,170,210" });
+    } else if (pt >= dur) {
       if (Math.random() < 0.35) { phase = "sit"; sitFor = rnd(0.9, 2.2); }
       else phase = "crouch";
       pt = 0;
     }
+  } else if (phase === "nap") {
+    fy = L.top;
+    if (pt >= napFor) { phase = "walk"; pt = 0; dv = -1; if (idx + dv < 0) dv = 1; planWalk(); }
   } else if (phase === "sit") {
     fy = L.top;
     if (pt >= sitFor) { phase = "crouch"; pt = 0; }
@@ -846,6 +862,7 @@ try {
   console.log("%cMetafobia", "font:italic 28px Georgia,serif;color:#fff;text-shadow:-2px 0 #ff3c8c,2px 0 #50dcff;padding:6px 0");
   console.log("%c" + POEM.join("\n"), "font:14px/1.6 Georgia,serif;color:#cfcfcf");
   console.log("%c/* si llegaste hasta aquí, ya eres parte de la obra */", "font:12px monospace;color:#666");
+  console.log("%c/* pista: escribe g-a-t-o en cualquier parte de la página */", "font:12px monospace;color:#666");
 } catch (e) {}
 
 // Botón visible para quien no conoce la consola del navegador:
@@ -883,6 +900,7 @@ try {
       ...POEM.map(t => ({ t, cls: "poem" })),
       { t: "" },
       { t: "/* si llegaste hasta aquí, ya eres parte de la obra */", cls: "dim" },
+      { t: "/* pista: escribe g-a-t-o en cualquier parte de la página (en el móvil, toca tres veces el título) */", cls: "dim" },
       { t: "> _", cls: "cmd blink" }
     ];
     out.replaceChildren();
@@ -905,6 +923,108 @@ try {
   box.querySelector(".term-x").addEventListener("click", close);
   box.addEventListener("click", e => { if (e.target === box) close(); });
   document.addEventListener("keydown", e => { if (e.key === "Escape" && !box.hidden) close(); });
+})();
+
+// ---------- Pestaña viva ----------
+// Si el visitante se va a otra pestaña, el título le habla; al volver, lo nota.
+(() => {
+  const BASE = document.title;
+  const AWAY = ["¿sigues ahí?", "el gato te espera", "Metafobia", "· · ·", "no cierres la metáfora"];
+  let timer = null, i = 0;
+  document.addEventListener("visibilitychange", () => {
+    clearInterval(timer); clearTimeout(timer);
+    if (document.hidden) {
+      i = 0; document.title = AWAY[0];
+      timer = setInterval(() => { i = (i + 1) % AWAY.length; document.title = AWAY[i]; }, 2200);
+    } else {
+      document.title = "volviste";
+      timer = setTimeout(() => { document.title = BASE; }, 2500);
+    }
+  });
+})();
+
+// ---------- Perderse: ir a una obra al azar ----------
+(() => {
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "drift-btn";
+  btn.innerHTML = '<span aria-hidden="true">↯</span> perderse';
+  btn.title = "abre una obra al azar";
+  const dock = document.createElement("div");
+  dock.className = "dock";
+  const cbtn = document.querySelector(".console-btn");
+  if (cbtn) dock.appendChild(cbtn);
+  dock.appendChild(btn);
+  document.body.appendChild(dock);
+  btn.addEventListener("click", () => {
+    if (btn.classList.contains("leaving")) return;
+    const works = allWorks();
+    const w = works[(Math.random() * works.length) | 0];
+    btn.classList.add("leaving");
+    if (!reduceMotion.matches) dissolve(btn);
+    remember(w.url);
+    setTimeout(() => { window.location.href = w.url; }, reduceMotion.matches ? 0 : FADE_MS);
+  });
+  window.addEventListener("pageshow", () => btn.classList.remove("leaving"));
+})();
+
+// ---------- Secreto: escribir "gato" ----------
+// Llueven píxeles y un gatito cruza corriendo la parte de abajo de la pantalla.
+(() => {
+  let buf = "", busy = false;
+  function kitten() {
+    if (busy) return;
+    busy = true;
+    // lluvia de píxeles
+    for (let i = 0; i < 260; i++) {
+      fxParts.push({ x: Math.random() * innerWidth, y: -10 - Math.random() * innerHeight * 0.6, vx: (Math.random() - 0.5) * 10, vy: 60 + Math.random() * 90, g: 30,
+        s: Math.random() < 0.7 ? 2 : 3, age: -Math.random() * 1.2, life: 2.2 + Math.random() * 1.2, c: COLORS[(Math.random() * COLORS.length) | 0], a: 0.85 });
+    }
+    startFx();
+    if (reduceMotion.matches) { busy = false; return; }
+    const NSs = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(NSs, "svg");
+    svg.setAttribute("class", "kitten");
+    svg.setAttribute("aria-hidden", "true");
+    svg.innerHTML = `<g class="k-pos"><path class="k-tail" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+      <g stroke="#fff" stroke-width="2.2" stroke-linecap="round"><line class="k-leg"/><line class="k-leg"/><line class="k-leg"/><line class="k-leg"/></g>
+      <ellipse cx="0" cy="-10" rx="10" ry="5.2" fill="#fff"/>
+      <path d="M7.4 -16.5 L8.6 -24 L11.6 -19.6 Z M12.6 -19.6 L15.8 -24 L16.8 -16.5 Z" fill="#fff"/>
+      <circle cx="12" cy="-15" r="5.2" fill="#fff"/><ellipse cx="14.4" cy="-15.8" rx="0.9" ry="1.5" fill="#000"/></g>`;
+    document.body.appendChild(svg);
+    const pos = svg.querySelector(".k-pos"), legsK = [...svg.querySelectorAll(".k-leg")], tailK = svg.querySelector(".k-tail");
+    const S = innerWidth < 760 ? 1.4 : 1.8, D = 4.2, y = innerHeight - 22;
+    const t0 = performance.now();
+    (function run(now) {
+      const q = (now - t0) / 1000 / D;
+      const x = -40 + (innerWidth + 80) * q;
+      const g = q * D * 5.5;
+      [[7, 0], [5, 0.5], [-6, 0.5], [-8, 0]].forEach(([hx, off], i) => {
+        const ph = (g + off) % 1;
+        legsK[i].setAttribute("x1", hx); legsK[i].setAttribute("y1", -7);
+        legsK[i].setAttribute("x2", (hx + Math.sin(ph * Math.PI * 2) * 4).toFixed(1));
+        legsK[i].setAttribute("y2", (-Math.max(0, Math.cos(ph * Math.PI * 2)) * 3).toFixed(1));
+      });
+      tailK.setAttribute("d", `M-9 -11 Q-19 -12 ${(-18 + Math.sin(now / 90) * 2).toFixed(1)} -22`);
+      pos.setAttribute("transform", `translate(${x.toFixed(1)} ${(y - Math.abs(Math.sin(g * Math.PI)) * 3).toFixed(1)}) scale(${S})`);
+      if (Math.random() < 0.6) fxParts.push({ x: x - 12 * S, y: y - 4, vx: -20 - Math.random() * 20, vy: -Math.random() * 20, g: 30, s: 2, age: 0, life: 0.8, c: COLORS[(Math.random() * COLORS.length) | 0], a: 0.8 });
+      startFx();
+      if (q < 1) requestAnimationFrame(run); else { svg.remove(); busy = false; }
+    })(t0);
+  }
+  document.addEventListener("keydown", e => {
+    if (e.ctrlKey || e.metaKey || e.altKey || e.key.length !== 1) return;
+    if (e.target.closest && e.target.closest("input, textarea, [contenteditable]")) return;
+    buf = (buf + e.key.toLowerCase()).slice(-4);
+    if (buf === "gato") { buf = ""; kitten(); }
+  });
+  // En pantallas táctiles: tres toques seguidos en el título
+  let taps = [];
+  titleEl.addEventListener("click", () => {
+    const now = performance.now();
+    taps = taps.filter(t => now - t < 900); taps.push(now);
+    if (taps.length >= 3) { taps = []; kitten(); }
+  });
 })();
 
 route();
