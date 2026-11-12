@@ -45,7 +45,8 @@ const sections = [
       { name: "GIFs", url: "https://metafobian-code.github.io/Gifs/" },
       { name: "Colaboración audiovisual", url: "https://vt.tiktok.com/ZSpJyAWkr" },
       { name: "Angel", url: "https://metafobian-code.github.io/Cursor/" },
-      { name: "Neón Ne", url: "https://metafobian-code.github.io/infiernol/aureola-infiernol.html" }
+      { name: "Neón Ne", url: "https://metafobian-code.github.io/infiernol/aureola-infiernol.html" },
+      { name: "Ansible: la ilusión de cercanía", url: "https://metafobian-code.github.io/-ansibles/ansible-animacion-v5.html" }
     ]
   }
 ];
