@@ -154,17 +154,19 @@ window.addEventListener("pageshow", () => {
 // ---------- Efecto glitch al pasar el ratón ----------
 // Las letras se mezclan con signos al azar y vuelven a ordenarse.
 const GLYPHS = "░▒▓█<>/\\|_-=+*#%&$@01{}[]";
-function scramble(a) {
+function scramble(a, D = 420) {
   if (reduceMotion.matches || a.dataset.busy) return;
   const text = a.dataset.text || (a.dataset.text = a.textContent);
   a.dataset.busy = "1";
   a.setAttribute("aria-label", text);
   a.style.minWidth = a.getBoundingClientRect().width + "px";
-  const start = performance.now(), D = 420;
+  a.classList.add("glitching");
+  const start = performance.now();
   function tick(now) {
     const k = (now - start) / D;
     if (k >= 1) {
       a.textContent = text; a.style.minWidth = ""; delete a.dataset.busy;
+      a.classList.remove("glitching");
       return;
     }
     let out = "";
@@ -178,10 +180,22 @@ function scramble(a) {
   }
   requestAnimationFrame(tick);
 }
-document.addEventListener("mouseover", e => {
-  const a = e.target.closest && e.target.closest("a.link");
-  if (a && !a.contains(e.relatedTarget)) scramble(a);
-});
+// "pointerover" funciona con ratón, trackpad de tableta, lápiz y dedo;
+// "mouseover" queda como respaldo para navegadores antiguos.
+const titleEl = document.querySelector(".title");
+const glitchTarget = el => el && el.closest && el.closest("a.link, .title");
+function onOver(e) {
+  const a = glitchTarget(e.target);
+  if (a && !a.contains(e.relatedTarget)) scramble(a, a === titleEl ? 800 : 420);
+}
+if (window.PointerEvent) document.addEventListener("pointerover", onOver);
+else document.addEventListener("mouseover", onOver);
+// En pantallas táctiles, tocar el título también lo distorsiona
+titleEl.addEventListener("click", () => scramble(titleEl, 800));
+// El título se distorsiona solo de vez en cuando
+(function autoGlitch() {
+  setTimeout(() => { if (!document.hidden) scramble(titleEl, 800); autoGlitch(); }, 6000 + Math.random() * 6000);
+})();
 document.addEventListener("focusin", e => {
   if (e.target.matches && e.target.matches("a.link")) scramble(e.target);
 });
