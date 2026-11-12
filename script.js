@@ -111,6 +111,8 @@ const sections = [
 const LATEST = null;
 const LATEST_FALLBACK = LATEST || "https://metafobian-code.github.io/-ansibles/ansible-animacion-v5.html";
 const GITHUB_USER = "metafobian-code";
+// Repositorios que nunca deben salir como "lo más reciente" (en minúsculas).
+const LATEST_IGNORE = ["metafobia", "metafobian-code.github.io", "-editable"];
 const FADE_MS = 700;
 const list = document.getElementById("projectList");
 const wrap = document.getElementById("listWrap");
@@ -191,9 +193,10 @@ function render(items, title) {
 const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
 const allWorks = () => sections.flatMap(sec => sec.children.map(w => ({ ...w, section: sec.name })));
 let latestUrl = LATEST_FALLBACK;
+let latestExtra = null; // obra nueva que aún no está en ninguna sección
 
 function makeFeatured() {
-  const w = allWorks().find(x => x.url === latestUrl) || allWorks()[0];
+  const w = latestExtra || allWorks().find(x => x.url === latestUrl) || allWorks()[0];
   const li = makeItem(w.name, w.url, undefined, "✦");
   li.classList.add("featured");
   const label = document.createElement("p");
@@ -220,28 +223,36 @@ function renderMain() {
   });
   observeReveal();
 }
-// Pregunta a GitHub (una vez por visita) cuál es el repositorio más reciente
+// Pregunta a GitHub (una vez por visita) cuál es el repositorio más reciente.
+// Si es una obra que ya está en una sección, la destaca con su nombre.
+// Si es un repositorio nuevo con GitHub Pages que aún no está en ninguna
+// sección, también lo destaca (con su descripción o su nombre).
 (async () => {
   const repoOf = u => { const m = u.match(/^https:\/\/[^/]+\.github\.io\/([^/?#]+)/i); return m ? decodeURIComponent(m[1]).toLowerCase() : null; };
   if (LATEST) return; // obra elegida a mano: no se consulta GitHub
   try {
-    let names = null;
-    try { names = JSON.parse(sessionStorage.getItem("metafobia:repos")); } catch (e) {}
-    if (!names) {
+    let repos = null;
+    try { repos = JSON.parse(sessionStorage.getItem("metafobia:repos2")); } catch (e) {}
+    if (!repos) {
       const r = await fetch(`https://api.github.com/users/${GITHUB_USER}/repos?sort=pushed&direction=desc&per_page=50`);
       if (!r.ok) return;
-      names = (await r.json()).map(x => x.name.toLowerCase());
-      try { sessionStorage.setItem("metafobia:repos", JSON.stringify(names)); } catch (e) {}
+      repos = (await r.json()).map(x => ({ name: x.name, pages: !!x.has_pages, desc: x.description || "" }));
+      try { sessionStorage.setItem("metafobia:repos2", JSON.stringify(repos)); } catch (e) {}
     }
     const works = allWorks();
-    for (const n of names) {
+    for (const repo of repos) {
+      const n = repo.name.toLowerCase();
+      if (LATEST_IGNORE.includes(n)) continue;
       const w = works.find(x => repoOf(x.url) === n);
-      if (w) { latestUrl = w.url; break; }
+      if (w) { latestUrl = w.url; latestExtra = null; break; }
+      if (repo.pages) {
+        const pretty = repo.desc.trim() || repo.name.replace(/^[-_.]+/, "").replace(/[-_]+/g, " ").replace(/\.html?$/i, "");
+        latestExtra = { name: pretty, url: `https://${GITHUB_USER}.github.io/${repo.name}/`, section: "nuevo" };
+        break;
+      }
     }
-    {
-      const old = list.querySelector(".featured");
-      if (old && !location.hash) { const nu = makeFeatured(); nu.classList.add("reveal", "in"); old.replaceWith(nu); measure(); }
-    }
+    const old = list.querySelector(".featured");
+    if (old && !location.hash) { const nu = makeFeatured(); nu.classList.add("reveal", "in"); old.replaceWith(nu); measure(); }
   } catch (e) {}
 })();
 
