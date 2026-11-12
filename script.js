@@ -653,7 +653,10 @@ function draw(t) {
 }
 
 // Cursor: si se acerca, el gato se detiene y lo mira.
-let ptr = null, lookAng = 0, awayT = 0;
+// Mira unos segundos (LOOK_MAX) y luego sigue su camino; durante LOOK_REST
+// no vuelve a detenerse aunque el cursor siga cerca.
+let ptr = null, lookAng = 0, awayT = 0, lookRestUntil = 0;
+const LOOK_MAX = 3, LOOK_REST = 6;
 document.addEventListener("pointermove", e => { if (e.pointerType !== "touch") ptr = { x: e.clientX, y: e.clientY }; });
 document.documentElement.addEventListener("mouseleave", () => { ptr = null; });
 document.addEventListener("pointerdown", e => { ptr = { x: e.clientX, y: e.clientY }; });
@@ -672,10 +675,12 @@ function frame(t) {
     cx = ptr.x - w.left; cy = ptr.y - w.top;
     near = Math.hypot(cx - fx, cy - (fy - 14 * sc)) < 95 * sc;
   }
-  if (near && (phase === "walk" || phase === "sit")) { phase = "look"; pt = 0; meetPending = false; }
+  if (near && clock > lookRestUntil && (phase === "walk" || phase === "sit")) { phase = "look"; pt = 0; meetPending = false; }
   if (phase === "look") {
     fy = L.top;
-    if (near) {
+    if (pt > LOOK_MAX) { // ya miró suficiente: sigue caminando
+      phase = "walk"; pt = 0; awayT = 0; lookRestUntil = clock + LOOK_REST; planWalk();
+    } else if (near) {
       awayT = 0;
       if (Math.abs(cx - fx) > 6) face = Math.sign(cx - fx);
       const ang = Math.atan2(cy - (fy - 15 * sc), Math.max(8, Math.abs(cx - fx))) * 180 / Math.PI;
@@ -683,7 +688,7 @@ function frame(t) {
     } else {
       awayT += dt;
       lookAng = lerp(lookAng, 0, 0.08);
-      if (awayT > 0.9) { phase = "walk"; pt = 0; awayT = 0; planWalk(); }
+      if (awayT > 0.9) { phase = "walk"; pt = 0; awayT = 0; lookRestUntil = clock + 1.5; planWalk(); }
     }
     draw(t); stepDust(dt); requestAnimationFrame(frame); return;
   }
