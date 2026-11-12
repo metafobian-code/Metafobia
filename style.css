@@ -48,6 +48,10 @@ body{background:#000;color:var(--fg);font-family:Georgia,"Times New Roman",serif
   100%{text-shadow:-1px 0 rgba(255,60,140,.85),1px 0 rgba(80,220,255,.85),0 0 10px rgba(255,255,255,.55);transform:translateX(1px) skewX(2deg)}
 }
 
+/* Obras ya visitadas: más tenues (la memoria del visitante) */
+.worn .link{opacity:calc(1 - var(--wear,0));filter:blur(calc(var(--wear,0) * 1.2px))}
+.worn .link:hover,.worn .link:focus-visible{opacity:1;filter:none}
+
 /* Índice tipo catálogo */
 .num{display:inline-block;width:2.6em;font:400 .72rem/1 "Courier New",Courier,monospace;letter-spacing:.12em;color:#5a5a5a;vertical-align:.18em;transition:color .35s ease,text-shadow .35s ease;user-select:none}
 .item:hover .num,.item:focus-within .num{color:#cfcfcf;text-shadow:0 0 8px rgba(255,255,255,.5)}
@@ -83,6 +87,7 @@ body{background:#000;color:var(--fg);font-family:Georgia,"Times New Roman",serif
 
 /* ---- Enlace de sección bajo el título ---- */
 .gates{margin-top:1.1rem;text-align:right;position:relative;padding-top:1.6rem}
+.sleeper .sl-hit{pointer-events:auto;cursor:pointer}
 .sleeper{position:absolute;left:0;top:0;width:1px;height:1px;overflow:visible;pointer-events:none;filter:drop-shadow(0 0 4px rgba(255,255,255,.55))}
 .gates[hidden]{display:none}
 .gates .link{font-size:clamp(.85rem,1.2vw,1.05rem);font-style:italic}

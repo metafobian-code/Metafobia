@@ -61,6 +61,26 @@ const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const slug = t => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
   .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 
+// ---------- Memoria del visitante ----------
+// Cada obra visitada se "gasta": su título pierde letras y brillo.
+// Se guarda solo en este navegador (localStorage).
+const MEM_KEY = "metafobia:visitas";
+function loadMem() { try { return JSON.parse(localStorage.getItem(MEM_KEY)) || {}; } catch (e) { return {}; } }
+function remember(url) {
+  try { const m = loadMem(); m[url] = (m[url] || 0) + 1; localStorage.setItem(MEM_KEY, JSON.stringify(m)); } catch (e) {}
+}
+function hashStr(t) { let h = 2166136261; for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+// Borra letras de forma estable (las mismas cada vez), más cuantas más visitas.
+function wear(name, visits) {
+  const idxs = [...name].map((c, i) => i).filter(i => name[i] !== " ");
+  const lose = Math.min(Math.floor(idxs.length * 0.45), visits * Math.max(1, Math.round(idxs.length / 8)));
+  let seed = hashStr(name);
+  const rand = () => (seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296;
+  for (let i = idxs.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [idxs[i], idxs[j]] = [idxs[j], idxs[i]]; }
+  const gone = new Set(idxs.slice(0, lose));
+  return [...name].map((c, i) => gone.has(i) ? "\u00b7" : c).join("");
+}
+
 function makeItem(name, href, sectionId, n) {
   const li = document.createElement("li");
   li.className = "item";
@@ -76,6 +96,16 @@ function makeItem(name, href, sectionId, n) {
   a.textContent = name;
   a.href = href;
   if (sectionId !== undefined) a.dataset.section = sectionId;
+  const visits = sectionId === undefined ? (loadMem()[href] || 0) : 0;
+  if (visits) {
+    const worn = wear(name, visits);
+    a.textContent = worn;
+    a.dataset.text = worn;
+    a.setAttribute("aria-label", name);
+    a.title = visits === 1 ? "ya estuviste aquí" : `ya estuviste aquí ${visits} veces`;
+    li.classList.add("worn");
+    li.style.setProperty("--wear", Math.min(0.55, 0.18 * visits).toFixed(2));
+  }
   li.appendChild(a);
   return li;
 }
@@ -140,6 +170,7 @@ function handleClick(e) {
     setTimeout(() => goTo(id), wait);
   } else {
     const url = a.href;
+    remember(a.getAttribute("href"));
     setTimeout(() => { window.location.href = url; }, wait);
   }
 }
@@ -381,7 +412,7 @@ function stepDust(dt) {
 // ---- Dibujo del gato (coordenadas locales: patas en y=0, mira a la derecha) ----
 function draw(t) {
   let squash = 1, lift = 0, legMode = "walk";
-  if (phase === "sit") legMode = "sit";
+  if (phase === "sit" || phase === "look") legMode = "sit";
   if (phase === "crouch") { squash = 1 - 0.22 * ease(clamp(pt / CROUCH, 0, 1)); legMode = "sit"; }
   if (phase === "jump") legMode = "jump";
   if (phase === "land") { squash = 1 - 0.18 * Math.sin(clamp(pt / LAND, 0, 1) * Math.PI); }
@@ -405,18 +436,24 @@ function draw(t) {
   });
 
   // cola: ondula; erguida cuando se sienta
-  const sway = Math.sin(t / (phase === "sit" ? 520 : 260)) * (phase === "sit" ? 4 : 2.5);
-  const tipY = phase === "jump" ? -14 : phase === "sit" ? -26 : -23;
+  const sway = phase === "look" ? Math.sin(t / 140) * 3 : Math.sin(t / (phase === "sit" ? 520 : 260)) * (phase === "sit" ? 4 : 2.5);
+  const tipY = phase === "jump" ? -14 : (phase === "sit" || phase === "look") ? -26 : -23;
   const tipX = phase === "jump" ? -24 : -17 + sway;
   tail.setAttribute("d", `M-10 -11 Q${(-20 + sway * 0.5).toFixed(1)} -13 ${tipX.toFixed(1)} ${tipY.toFixed(1)}`);
 
   const bob = phase === "walk" ? Math.abs(Math.sin(gait * Math.PI * 2)) * -0.8 : 0;
   const tiltJ = phase === "jump" ? (jy1 > jy0 ? 1 : -1) * Math.cos(clamp(pt / jdur, 0, 1) * Math.PI) * -14 : 0;
   catBody.setAttribute("transform", `translate(0 ${(bob - lift).toFixed(2)}) rotate(${tiltJ.toFixed(1)} 0 -8) scale(1 ${squash.toFixed(3)})`);
-  const look = phase === "sit" ? Math.sin(t / 900) * 8 : 0;
+  const look = phase === "look" ? lookAng : phase === "sit" ? Math.sin(t / 900) * 8 : 0;
   catHead.setAttribute("transform", `rotate(${look.toFixed(1)} 12 -15)`);
   catPos.setAttribute("transform", `translate(${fx.toFixed(1)} ${fy.toFixed(1)}) scale(${face * sc} ${sc})`);
 }
+
+// Cursor: si se acerca, el gato se detiene y lo mira.
+let ptr = null, lookAng = 0, awayT = 0;
+document.addEventListener("pointermove", e => { if (e.pointerType !== "touch") ptr = { x: e.clientX, y: e.clientY }; });
+document.documentElement.addEventListener("mouseleave", () => { ptr = null; });
+document.addEventListener("pointerdown", e => { ptr = { x: e.clientX, y: e.clientY }; });
 
 let last = null;
 function frame(t) {
@@ -424,6 +461,29 @@ function frame(t) {
   const dt = last === null ? 0 : Math.min(0.05, (t - last) / 1000);
   last = t; pt += dt;
   const L = lines[idx];
+
+  // ¿está el cursor cerca?
+  let near = false, cx = 0, cy = 0;
+  if (ptr) {
+    const w = wrap.getBoundingClientRect();
+    cx = ptr.x - w.left; cy = ptr.y - w.top;
+    near = Math.hypot(cx - fx, cy - (fy - 14 * sc)) < 95 * sc;
+  }
+  if (near && (phase === "walk" || phase === "sit")) { phase = "look"; pt = 0; }
+  if (phase === "look") {
+    fy = L.top;
+    if (near) {
+      awayT = 0;
+      if (Math.abs(cx - fx) > 6) face = Math.sign(cx - fx);
+      const ang = Math.atan2(cy - (fy - 15 * sc), Math.max(8, Math.abs(cx - fx))) * 180 / Math.PI;
+      lookAng = lerp(lookAng, clamp(ang, -40, 25), 0.15);
+    } else {
+      awayT += dt;
+      lookAng = lerp(lookAng, 0, 0.08);
+      if (awayT > 0.9) { phase = "walk"; pt = 0; awayT = 0; planWalk(); }
+    }
+    draw(t); stepDust(dt); requestAnimationFrame(frame); return;
+  }
 
   if (phase === "walk") {
     const prev = fx;
@@ -496,15 +556,25 @@ const sleeper = (() => {
         <ellipse cx="0" cy="-6.5" rx="13" ry="6.5" fill="#fff"/>
         <path d="M-15.2 -8 L-15.6 -15.8 L-11.4 -11.6 Z M-10 -11.8 L-6.6 -15.6 L-5.6 -9 Z" fill="#fff"/>
         <circle cx="-11" cy="-6.6" r="5.4" fill="#fff"/>
-        <path d="M-14.6 -6.6 Q-13 -5 -11.4 -6.6" fill="none" stroke="#000" stroke-width="1" stroke-linecap="round"/>
+        <path class="sl-eye-closed" d="M-14.6 -6.6 Q-13 -5 -11.4 -6.6" fill="none" stroke="#000" stroke-width="1" stroke-linecap="round"/>
+        <ellipse class="sl-eye-open" cx="-13" cy="-7" rx="1" ry="1.6" fill="#000" opacity="0"/>
         <path d="M-15 -1.2 L-9 -1.2" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
       </g>
+      <ellipse class="sl-hit" cx="-1" cy="-8" rx="22" ry="14" fill="transparent"/>
       <g class="sl-z" fill="#fff" font-family="Courier New, monospace" font-size="7">
         <text>z</text><text>z</text><text>z</text>
       </g>
     </g>`;
   gates.appendChild(svg);
   const pos = svg.querySelector(".sl-pos"), body = svg.querySelector(".sl-body");
+  const eyeC = svg.querySelector(".sl-eye-closed"), eyeO = svg.querySelector(".sl-eye-open");
+  // Despertar: abre un ojo, se estira y vuelve a dormirse
+  let wakeT = -1;
+  const WAKE = 3.2;
+  svg.querySelector(".sl-hit").addEventListener("click", e => {
+    e.stopPropagation();
+    if (wakeT < 0) wakeT = 0;
+  });
   const tailEl = svg.querySelector(".sl-tail"), zs = [...svg.querySelectorAll(".sl-z text")];
   const zState = zs.map(() => ({ age: 99 }));
   let px = 0, py = 0, ssc = 1;
@@ -529,7 +599,18 @@ const sleeper = (() => {
     const sec = t / 1000;
     // respiración
     const br = 1 + Math.sin(sec * 1.6) * 0.045;
-    body.setAttribute("transform", `scale(1 ${br.toFixed(3)})`);
+    let wk = 0;
+    if (wakeT >= 0) {
+      wakeT += dt;
+      const q = wakeT / WAKE;
+      // 0–.15 abre el ojo · .15–.6 se estira · .6–1 se acomoda y cierra el ojo
+      wk = q < 0.15 ? 0 : q < 0.35 ? ease((q - 0.15) / 0.2) : q < 0.6 ? 1 : q < 0.85 ? 1 - ease((q - 0.6) / 0.25) : 0;
+      const eyeOpen = q > 0.05 && q < 0.88;
+      eyeO.setAttribute("opacity", eyeOpen ? "1" : "0");
+      eyeC.setAttribute("opacity", eyeOpen ? "0" : "1");
+      if (q >= 1) { wakeT = -1; nextZ = 1.2; }
+    }
+    body.setAttribute("transform", `translate(${(-2 * wk).toFixed(2)} 0) scale(${(1 + 0.14 * wk).toFixed(3)} ${(br - 0.08 * wk).toFixed(3)})`);
     // cola en intervalos espaciados
     let k = 0;
     nextFlick -= dt;
@@ -541,9 +622,10 @@ const sleeper = (() => {
       k = Math.sin(q * Math.PI) * (0.85 + 0.15 * Math.sin(q * Math.PI * 4));
       if (q >= 1) { flickT = -1; nextFlick = 4 + Math.random() * 6; }
     }
+    if (wakeT >= 0) k = Math.max(k, Math.min(1, wk * 1.1));
     tailEl.setAttribute("d", tailPath(k));
     // zetas que suben y se desvanecen
-    nextZ -= dt;
+    if (wakeT < 0) nextZ -= dt;
     if (nextZ <= 0) { zState[zi].age = 0; zi = (zi + 1) % zs.length; nextZ = 1.1 + Math.random() * 0.6; }
     zs.forEach((z, i) => {
       const st = zState[i]; st.age += dt;
@@ -570,6 +652,27 @@ const sleeper = (() => {
   } else requestAnimationFrame(frame);
   return { place };
 })();
+
+// ---------- Para quien mira la consola ----------
+try {
+  console.log(
+    "%cMetafobia",
+    "font:italic 28px Georgia,serif;color:#fff;text-shadow:-2px 0 #ff3c8c,2px 0 #50dcff;padding:6px 0"
+  );
+  console.log(
+    "%cno abras la metáfora:\n" +
+    "adentro hay otra puerta\n" +
+    "y detrás de la puerta, un gato\n" +
+    "que sueña que es el código\n" +
+    "que lo está soñando.\n\n" +
+    "cada enlace que tocas\n" +
+    "se gasta un poco.\n" +
+    "esta página te recuerda\n" +
+    "mejor de lo que tú la recuerdas.",
+    "font:14px/1.6 Georgia,serif;color:#cfcfcf"
+  );
+  console.log("%c/* si llegaste hasta aquí, ya eres parte de la obra */", "font:12px monospace;color:#666");
+} catch (e) {}
 
 route();
 if (!reduceMotion.matches) requestAnimationFrame(frame);
