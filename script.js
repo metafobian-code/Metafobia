@@ -480,5 +480,96 @@ window.addEventListener("resize", measure);
 window.addEventListener("load", measure);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
 
+// ---------- Gatito dormido sobre "Ilustraciones, IA y absurdos" ----------
+// Enroscado, respira despacio, de vez en cuando mueve la cola y suelta una "z".
+const sleeper = (() => {
+  const gate = gates.querySelector(".gate");
+  if (!gate) return null;
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("class", "sleeper");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("width", "1"); svg.setAttribute("height", "1");
+  svg.innerHTML = `
+    <g class="sl-pos">
+      <path class="sl-tail" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+      <g class="sl-body">
+        <ellipse cx="0" cy="-6.5" rx="13" ry="6.5" fill="#fff"/>
+        <path d="M-15.2 -8 L-15.6 -15.8 L-11.4 -11.6 Z M-10 -11.8 L-6.6 -15.6 L-5.6 -9 Z" fill="#fff"/>
+        <circle cx="-11" cy="-6.6" r="5.4" fill="#fff"/>
+        <path d="M-14.6 -6.6 Q-13 -5 -11.4 -6.6" fill="none" stroke="#000" stroke-width="1" stroke-linecap="round"/>
+        <path d="M-15 -1.2 L-9 -1.2" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+      </g>
+      <g class="sl-z" fill="#fff" font-family="Courier New, monospace" font-size="7">
+        <text>z</text><text>z</text><text>z</text>
+      </g>
+    </g>`;
+  gates.appendChild(svg);
+  const pos = svg.querySelector(".sl-pos"), body = svg.querySelector(".sl-body");
+  const tailEl = svg.querySelector(".sl-tail"), zs = [...svg.querySelectorAll(".sl-z text")];
+  const zState = zs.map(() => ({ age: 99 }));
+  let px = 0, py = 0, ssc = 1;
+
+  function place() {
+    if (gates.hidden) return;
+    const g = gates.getBoundingClientRect(), r = gate.getBoundingClientRect();
+    ssc = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--s")) || 1) * 0.95;
+    px = r.right - g.left - 28 * ssc;
+    py = r.top - g.top + 4;
+  }
+  // cola: reposo enroscada al frente; "flick" = se levanta, se curva y vuelve
+  function tailPath(k) {
+    const cx = lerp(18, 21, k), cy = lerp(2, -10, k);
+    const tx = lerp(4, 22, k), ty = lerp(1.2, -17, k);
+    return `M12 -3 Q${cx.toFixed(1)} ${cy.toFixed(1)} ${tx.toFixed(1)} ${ty.toFixed(1)}`;
+  }
+  let nextFlick = 2.5, flickT = -1, nextZ = 1.5, zi = 0, lastT = null;
+  function frame(t) {
+    const dt = lastT === null ? 0 : Math.min(0.05, (t - lastT) / 1000);
+    lastT = t;
+    const sec = t / 1000;
+    // respiración
+    const br = 1 + Math.sin(sec * 1.6) * 0.045;
+    body.setAttribute("transform", `scale(1 ${br.toFixed(3)})`);
+    // cola en intervalos espaciados
+    let k = 0;
+    nextFlick -= dt;
+    if (nextFlick <= 0 && flickT < 0) flickT = 0;
+    if (flickT >= 0) {
+      flickT += dt;
+      const D = 1.8;
+      const q = clamp(flickT / D, 0, 1);
+      k = Math.sin(q * Math.PI) * (0.85 + 0.15 * Math.sin(q * Math.PI * 4));
+      if (q >= 1) { flickT = -1; nextFlick = 4 + Math.random() * 6; }
+    }
+    tailEl.setAttribute("d", tailPath(k));
+    // zetas que suben y se desvanecen
+    nextZ -= dt;
+    if (nextZ <= 0) { zState[zi].age = 0; zi = (zi + 1) % zs.length; nextZ = 1.1 + Math.random() * 0.6; }
+    zs.forEach((z, i) => {
+      const st = zState[i]; st.age += dt;
+      const a = st.age / 3;
+      if (a >= 1) { z.setAttribute("opacity", "0"); return; }
+      z.setAttribute("x", (-16 - a * 8 + Math.sin(a * 6) * 2).toFixed(1));
+      z.setAttribute("y", (-14 - a * 16).toFixed(1));
+      z.setAttribute("font-size", (5 + a * 4).toFixed(1));
+      z.setAttribute("opacity", (Math.sin(a * Math.PI) * 0.8).toFixed(2));
+    });
+    pos.setAttribute("transform", `translate(${px.toFixed(1)} ${py.toFixed(1)}) scale(${ssc})`);
+    requestAnimationFrame(frame);
+  }
+  place();
+  if (window.ResizeObserver) new ResizeObserver(place).observe(gates);
+  window.addEventListener("resize", place);
+  window.addEventListener("load", place);
+  window.addEventListener("hashchange", () => setTimeout(place, 50));
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(place);
+  if (reduceMotion.matches) {
+    tailEl.setAttribute("d", tailPath(0));
+    zs.forEach(z => z.setAttribute("opacity", "0"));
+    pos.setAttribute("transform", `translate(${px} ${py}) scale(${ssc})`);
+  } else requestAnimationFrame(frame);
+  return { place };
+})();
+
 route();
 if (!reduceMotion.matches) requestAnimationFrame(frame);

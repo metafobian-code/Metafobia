@@ -82,7 +82,8 @@ body{background:#000;color:var(--fg);font-family:Georgia,"Times New Roman",serif
 }
 
 /* ---- Enlace de sección bajo el título ---- */
-.gates{margin-top:1.1rem;text-align:right}
+.gates{margin-top:1.1rem;text-align:right;position:relative;padding-top:1.6rem}
+.sleeper{position:absolute;left:0;top:0;width:1px;height:1px;overflow:visible;pointer-events:none;filter:drop-shadow(0 0 4px rgba(255,255,255,.55))}
 .gates[hidden]{display:none}
 .gates .link{font-size:clamp(.85rem,1.2vw,1.05rem);font-style:italic}
 .gates .link:hover,.gates .link:focus-visible{transform:translateX(-6px)}
