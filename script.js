@@ -61,8 +61,16 @@ const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const slug = t => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
   .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 
-function makeItem(name, href, sectionId) {
+function makeItem(name, href, sectionId, n) {
   const li = document.createElement("li");
+  li.className = "item";
+  if (n) {
+    const num = document.createElement("span");
+    num.className = "num";
+    num.setAttribute("aria-hidden", "true");
+    num.textContent = String(n).padStart(2, "0");
+    li.appendChild(num);
+  }
   const a = document.createElement("a");
   a.className = "link";
   a.textContent = name;
@@ -96,7 +104,8 @@ function render(items, title) {
     list.appendChild(li);
     list.appendChild(makeItem("← volver", "#", ""));
   }
-  items.forEach(p => list.appendChild(makeItem(p.name, p.url)));
+  items.forEach((p, i) => list.appendChild(makeItem(p.name, p.url, undefined, i + 1)));
+  observeReveal();
 }
 
 function route() {
@@ -124,6 +133,7 @@ function handleClick(e) {
   e.preventDefault();
   if (a.classList.contains("leaving")) return;
   a.classList.add("leaving");
+  if (!reduceMotion.matches) dissolve(a);
   const wait = reduceMotion.matches ? 0 : FADE_MS;
   if ("section" in a.dataset) {
     const id = a.dataset.section;
@@ -138,7 +148,129 @@ gates.addEventListener("click", handleClick);
 // Si el usuario vuelve con "atrás", restaurar los enlaces
 window.addEventListener("pageshow", () => {
   document.querySelectorAll(".leaving").forEach(a => a.classList.remove("leaving"));
+  fxParts.length = 0;
 });
+
+// ---------- Efecto glitch al pasar el ratón ----------
+// Las letras se mezclan con signos al azar y vuelven a ordenarse.
+const GLYPHS = "░▒▓█<>/\\|_-=+*#%&$@01{}[]";
+function scramble(a) {
+  if (reduceMotion.matches || a.dataset.busy) return;
+  const text = a.dataset.text || (a.dataset.text = a.textContent);
+  a.dataset.busy = "1";
+  a.setAttribute("aria-label", text);
+  a.style.minWidth = a.getBoundingClientRect().width + "px";
+  const start = performance.now(), D = 420;
+  function tick(now) {
+    const k = (now - start) / D;
+    if (k >= 1) {
+      a.textContent = text; a.style.minWidth = ""; delete a.dataset.busy;
+      return;
+    }
+    let out = "";
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (ch === " " || i / text.length < k * 1.15 - 0.1) out += ch;
+      else out += GLYPHS[(Math.random() * GLYPHS.length) | 0];
+    }
+    a.textContent = out;
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+document.addEventListener("mouseover", e => {
+  const a = e.target.closest && e.target.closest("a.link");
+  if (a && !a.contains(e.relatedTarget)) scramble(a);
+});
+document.addEventListener("focusin", e => {
+  if (e.target.matches && e.target.matches("a.link")) scramble(e.target);
+});
+
+// ---------- Disolver en píxeles al hacer clic ----------
+// Se dibuja el título en un lienzo oculto y cada píxel encendido
+// se convierte en una partícula que se lleva el viento.
+const fxCanvas = document.createElement("canvas");
+fxCanvas.className = "fx";
+fxCanvas.setAttribute("aria-hidden", "true");
+document.body.appendChild(fxCanvas);
+const fctx = fxCanvas.getContext("2d");
+const fxParts = [];
+let fxRunning = false, fxLast = 0;
+function sizeFx() {
+  const d = Math.min(2, window.devicePixelRatio || 1);
+  fxCanvas.width = innerWidth * d; fxCanvas.height = innerHeight * d;
+  fxCanvas.style.width = innerWidth + "px"; fxCanvas.style.height = innerHeight + "px";
+  fctx.setTransform(d, 0, 0, d, 0, 0);
+}
+sizeFx();
+window.addEventListener("resize", sizeFx);
+
+function dissolve(a) {
+  const r = a.getBoundingClientRect();
+  const cs = getComputedStyle(a);
+  const w = Math.ceil(r.width) + 4, h = Math.ceil(r.height) + 4;
+  const off = document.createElement("canvas");
+  off.width = w; off.height = h;
+  const o = off.getContext("2d");
+  o.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+  if ("letterSpacing" in o) o.letterSpacing = cs.letterSpacing;
+  o.textBaseline = "middle";
+  o.fillStyle = "#fff";
+  o.fillText(a.dataset.text || a.textContent, 0, h / 2);
+  const data = o.getImageData(0, 0, w, h).data;
+  const STEP = 2;
+  for (let y = 0; y < h; y += STEP) {
+    for (let x = 0; x < w; x += STEP) {
+      if (data[(y * w + x) * 4 + 3] > 120) {
+        const delay = (x / w) * 0.35 + Math.random() * 0.12; // de izquierda a derecha
+        fxParts.push({
+          x: r.left + x, y: r.top + y - 2, vx: 30 + Math.random() * 70, vy: -20 - Math.random() * 40,
+          s: Math.random() < 0.8 ? 2 : 3, age: -delay, life: 0.5 + Math.random() * 0.4
+        });
+      }
+    }
+  }
+  if (!fxRunning) { fxRunning = true; fxLast = performance.now(); requestAnimationFrame(fxFrame); }
+}
+function fxFrame(now) {
+  const dt = Math.min(0.05, (now - fxLast) / 1000); fxLast = now;
+  fctx.clearRect(0, 0, innerWidth, innerHeight);
+  for (let i = fxParts.length - 1; i >= 0; i--) {
+    const p = fxParts[i];
+    p.age += dt;
+    if (p.age >= p.life) { fxParts.splice(i, 1); continue; }
+    let x = p.x, y = p.y, k = 1;
+    if (p.age > 0) {
+      p.x += p.vx * dt; p.y += p.vy * dt; p.vy -= 10 * dt;
+      x = p.x + Math.sin(p.age * 18 + p.y) * 1.5; y = p.y;
+      k = 1 - p.age / p.life;
+    }
+    fctx.fillStyle = `rgba(255,255,255,${(k * 0.95).toFixed(3)})`;
+    fctx.fillRect(Math.round(x / p.s) * p.s, Math.round(y / p.s) * p.s, p.s, p.s);
+  }
+  if (fxParts.length) requestAnimationFrame(fxFrame);
+  else { fxRunning = false; fctx.clearRect(0, 0, innerWidth, innerHeight); }
+}
+
+// ---------- Aparición escalonada al desplazarse ----------
+let revealIO = null;
+function observeReveal() {
+  const items = [...list.children];
+  if (reduceMotion.matches || !("IntersectionObserver" in window)) {
+    items.forEach(li => li.classList.add("in")); return;
+  }
+  if (revealIO) revealIO.disconnect();
+  revealIO = new IntersectionObserver(entries => {
+    let n = 0;
+    entries.forEach(en => {
+      if (!en.isIntersecting) return;
+      en.target.style.transitionDelay = (n++ * 70) + "ms";
+      en.target.classList.add("in");
+      revealIO.unobserve(en.target);
+    });
+  }, { rootMargin: "0px 0px -8% 0px" });
+  items.forEach(li => { li.classList.add("reveal"); revealIO.observe(li); });
+}
 
 // ---------- Gato ----------
 // Camina sobre la parte superior de cada título, a veces se sienta,

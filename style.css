@@ -35,8 +35,20 @@ body{background:#000;color:var(--fg);font-family:Georgia,"Times New Roman",serif
   will-change:transform,opacity,filter;
 }
 .link:hover,.link:focus-visible{color:var(--fg-hi);text-shadow:0 0 9px rgba(255,255,255,.9),0 0 24px rgba(255,255,255,.55),0 0 48px rgba(255,255,255,.3);transform:translateX(6px);outline:none}
+.link{white-space:nowrap}
 .link.leaving{animation:vanish .7s ease forwards;pointer-events:none}
-@keyframes vanish{from{filter:blur(0);opacity:1}to{filter:blur(14px);opacity:0}}
+@keyframes vanish{0%{opacity:1;filter:blur(0)}15%{opacity:0;filter:blur(2px)}100%{opacity:0;filter:blur(2px)}}
+
+/* Índice tipo catálogo */
+.num{display:inline-block;width:2.6em;font:400 .72rem/1 "Courier New",Courier,monospace;letter-spacing:.12em;color:#5a5a5a;vertical-align:.18em;transition:color .35s ease,text-shadow .35s ease;user-select:none}
+.item:hover .num,.item:focus-within .num{color:#cfcfcf;text-shadow:0 0 8px rgba(255,255,255,.5)}
+
+/* Aparición escalonada (solo opacidad y desenfoque: no mueve los renglones del gato) */
+.reveal{opacity:0;filter:blur(6px);transition:opacity .9s ease,filter .9s ease}
+.reveal.in{opacity:1;filter:blur(0)}
+
+/* Lienzo del efecto de disolución */
+.fx{position:fixed;inset:0;z-index:10;pointer-events:none}
 
 .cat{position:absolute;left:0;top:0;width:1px;height:1px;overflow:visible;z-index:3;pointer-events:none;filter:drop-shadow(0 0 4px rgba(255,255,255,.55))}
 .dust{position:absolute;left:-40px;top:-40px;z-index:2;pointer-events:none}
@@ -55,6 +67,7 @@ body{background:#000;color:var(--fg);font-family:Georgia,"Times New Roman",serif
 
 @media (prefers-reduced-motion:reduce){
   .link{transition:none}
+  .reveal{opacity:1;filter:none;transition:none}
   .link.leaving{animation-duration:.01s}
 }
 
