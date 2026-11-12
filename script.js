@@ -529,7 +529,9 @@ function measure() {
 // Estados: walk → (sit) → crouch → jump → land → walk
 let idx = 0, dv = 1, phase = "walk", pt = 0, gait = 0;
 // Encuentro: a veces el gato camina hasta el gatito dormido y se acurruca a su lado
-let meetPending = false, meetCooldown = 12, napFor = 0, clock = 0;
+let meetPending = false, meetCooldown = 12, napFor = 0, clock = 0, heartT = 0;
+const catCurl = document.getElementById("catCurl"), curlBody = document.getElementById("curlBody");
+const NAP_IN = 0.55, NAP_OUT = 0.5; // se echa · se levanta
 const catEye = document.getElementById("catEye");
 let fx = 0, fy = 0, face = 1, x0 = 0, x1 = 0, dur = 2, sitFor = 0;
 let jx0 = 0, jy0 = 0, jx1 = 0, jy1 = 0, jdur = 0.7, jh = 18;
@@ -574,6 +576,14 @@ function emit(x, y, n, spread, life, up) {
     });
   }
 }
+// Corazón de píxeles (5×5 celdas) que sube despacio
+const HEART = [".#.#.", "#####", "#####", ".###.", "..#.."];
+function emitHeart(x, y) {
+  const S = 3, vx = rnd(-3, 3), vy = rnd(-11, -8), life = rnd(2.2, 2.8);
+  HEART.forEach((row, j) => [...row].forEach((c, i) => {
+    if (c === "#") parts.push({ x: x + (i - 2) * S, y: y + j * S, vx, vy, g: 0, s: S, life, age: 0, c: "255,120,190", heart: true });
+  }));
+}
 function stepDust(dt) {
   dctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   dctx.clearRect(0, 0, dust.width, dust.height);
@@ -581,12 +591,13 @@ function stepDust(dt) {
     const p = parts[i];
     p.age += dt;
     if (p.age >= p.life) { parts.splice(i, 1); continue; }
-    p.vy += 14 * dt; p.vx *= 0.985;
+    p.vy += (p.g === undefined ? 14 : p.g) * dt; p.vx *= 0.985;
     p.x += p.vx * dt; p.y += p.vy * dt;
-    const k = 1 - p.age / p.life;
+    // los corazones aparecen y se desvanecen suavemente; el polvo solo se apaga
+    const k = p.heart ? Math.sin(Math.PI * p.age / p.life) : 1 - p.age / p.life;
     // cuantizado a la rejilla del píxel: aspecto de polvo digital
     const gx = Math.round((p.x + PAD) / p.s) * p.s, gy = Math.round((p.y + PAD) / p.s) * p.s;
-    dctx.fillStyle = `rgba(${p.c},${(k * k * 0.9).toFixed(3)})`;
+    dctx.fillStyle = `rgba(${p.c},${(p.heart ? k : k * k * 0.9).toFixed(3)})`;
     dctx.fillRect(gx, gy, p.s, p.s);
   }
 }
@@ -595,8 +606,16 @@ function stepDust(dt) {
 function draw(t) {
   let squash = 1, lift = 0, legMode = "walk";
   if (phase === "sit" || phase === "look" || phase === "nap") legMode = "sit";
-  if (phase === "nap") squash = 0.76 + Math.sin(t / 650) * 0.025;
-  catEye.setAttribute("ry", phase === "nap" ? "0.25" : "1.5");
+  // Siesta: se echa (el cuerpo de pie se encoge y se desvanece) y aparece enroscado
+  let curl = 0;
+  if (phase === "nap") {
+    curl = Math.min(ease(clamp(pt / NAP_IN, 0, 1)), ease(clamp((napFor - pt) / NAP_OUT, 0, 1)));
+    squash = 1 - 0.35 * curl;
+  }
+  catCurl.setAttribute("opacity", curl.toFixed(2));
+  catBody.style.opacity = (1 - curl).toFixed(2);
+  if (curl > 0) curlBody.setAttribute("transform", `scale(1 ${(1 + Math.sin(t / 620) * 0.045).toFixed(3)})`);
+  catEye.setAttribute("ry", "1.5");
   if (phase === "crouch") { squash = 1 - 0.22 * ease(clamp(pt / CROUCH, 0, 1)); legMode = "sit"; }
   if (phase === "jump") legMode = "jump";
   if (phase === "land") { squash = 1 - 0.18 * Math.sin(clamp(pt / LAND, 0, 1) * Math.PI); }
@@ -679,7 +698,7 @@ function frame(t) {
     if (pt >= dur && meetPending) {
       meetPending = false; phase = "nap"; pt = 0; napFor = rnd(6, 10); meetCooldown = clock + rnd(45, 90);
       face = 1;
-      for (let i = 0; i < 6; i++) parts.push({ x: fx + rnd(-4, 14), y: fy - 30 - rnd(0, 6), vx: rnd(-4, 4), vy: rnd(-14, -6), s: 2, life: rnd(1.4, 2.2), age: 0, c: "255,170,210" });
+      heartT = 0.8;
     } else if (pt >= dur) {
       if (Math.random() < 0.35) { phase = "sit"; sitFor = rnd(0.9, 2.2); }
       else phase = "crouch";
@@ -687,6 +706,11 @@ function frame(t) {
     }
   } else if (phase === "nap") {
     fy = L.top;
+    // mientras duermen juntos, de vez en cuando sube un corazón
+    if (pt > NAP_IN && pt < napFor - NAP_OUT) {
+      heartT -= dt;
+      if (heartT <= 0) { emitHeart(fx + 18 * sc, fy - 24 * sc); heartT = rnd(1.6, 2.4); }
+    }
     if (pt >= napFor) { phase = "walk"; pt = 0; dv = -1; if (idx + dv < 0) dv = 1; planWalk(); }
   } else if (phase === "sit") {
     fy = L.top;
