@@ -914,6 +914,10 @@ try {
   box.innerHTML = `
     <div class="term-bar"><span>consola — metafobia</span><button type="button" class="term-x" aria-label="Cerrar">×</button></div>
     <pre class="term-out" aria-live="polite"></pre>
+    <div class="term-secret">
+      <span class="dim">/* secreto: escribe <b>g-a-t-o</b> en cualquier parte de la página, toca tres veces el título… o pulsa aquí */</span>
+      <button type="button" class="term-run">▶ invocar_gato()</button>
+    </div>
     <p class="term-help">Este poema también está escondido en la consola real del navegador.
     Para verla: en ordenador pulsa <kbd>F12</kbd> (o <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>J</kbd>;
     en Mac <kbd>⌘</kbd>+<kbd>⌥</kbd>+<kbd>J</kbd>) y abre la pestaña «Consola».
@@ -930,7 +934,6 @@ try {
       ...POEM.map(t => ({ t, cls: "poem" })),
       { t: "" },
       { t: "/* si llegaste hasta aquí, ya eres parte de la obra */", cls: "dim" },
-      { t: "/* pista: escribe g-a-t-o en cualquier parte de la página (en el móvil, toca tres veces el título) */", cls: "dim" },
       { t: "> _", cls: "cmd blink" }
     ];
     out.replaceChildren();
@@ -951,6 +954,10 @@ try {
   function close() { clearTimeout(timer); box.hidden = true; btn.setAttribute("aria-expanded", "false"); btn.focus(); }
   btn.addEventListener("click", open);
   box.querySelector(".term-x").addEventListener("click", close);
+  box.querySelector(".term-run").addEventListener("click", () => {
+    close();
+    setTimeout(() => { if (window.summonKitten) window.summonKitten(); }, 250);
+  });
   box.addEventListener("click", e => { if (e.target === box) close(); });
   document.addEventListener("keydown", e => { if (e.key === "Escape" && !box.hidden) close(); });
 })();
@@ -1002,6 +1009,7 @@ try {
 // Llueven píxeles y un gatito cruza corriendo la parte de abajo de la pantalla.
 (() => {
   let buf = "", busy = false;
+  window.summonKitten = () => kitten();
   function kitten() {
     if (busy) return;
     busy = true;

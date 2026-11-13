@@ -144,3 +144,11 @@ body{background:#000;color:var(--fg);font-family:Georgia,"Times New Roman",serif
 
 /* ---- Gatito secreto ---- */
 .kitten{position:fixed;left:0;top:0;width:1px;height:1px;overflow:visible;z-index:25;pointer-events:none;filter:drop-shadow(0 0 5px rgba(255,255,255,.7))}
+
+/* ---- Secreto del gato dentro de la consola ---- */
+.term-secret{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;background:#050505;border:1px solid #2a2a2a;border-top:1px dashed #222;
+  padding:.7rem 1.1rem;font:.78rem/1.5 "Courier New",Courier,monospace;color:#777}
+.term-secret b{color:#ff8cc6;font-weight:400}
+.term-run{background:none;border:1px solid #ff8cc6;color:#ff8cc6;border-radius:3px;padding:.35rem .7rem;font:.8rem "Courier New",Courier,monospace;cursor:pointer;
+  transition:background .3s ease,color .3s ease,box-shadow .3s ease}
+.term-run:hover,.term-run:focus-visible{background:#ff8cc6;color:#000;box-shadow:0 0 14px rgba(255,140,198,.45);outline:none}
