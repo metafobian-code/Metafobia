@@ -35,7 +35,8 @@ const sections = [
       { name: "[Π.Π]", url: "https://metafobian-code.github.io/Script/" },
       { name: "PROMPT: Jardín", url: "https://metafobian-code.github.io/-jardin/" },
       { name: "Bloc_notas", url: "https://metafobian-code.github.io/rr/" },
-      { name: "Glitch", url: "https://metafobian-code.github.io/Glitch/" }
+      { name: "Glitch", url: "https://metafobian-code.github.io/Glitch/" },
+      { name: "Contexto de tokens", url: "https://metafobian-code.github.io/Tokens/" }
     ]
   },
   {
